@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carcass — The 21 Card Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════ LANDING ════════════════════════════ -->
+  <div id="screen-landing" class="screen active">
+    <div class="landing-bg"></div>
+    <div class="landing-content">
+      <h1 class="title-logo">CARCASS</h1>
+      <p class="title-sub">The 21 Community Card Game</p>
+      <div class="menu-cards">
+        <div class="menu-card" onclick="openModal('create')">
+          <div class="menu-card-icon">🔗</div>
+          <div class="menu-card-title">Private Room</div>
+          <div class="menu-card-desc">Invite up to 5 friends with a link</div>
+        </div>
+        <div class="menu-card" onclick="openModal('ai')">
+          <div class="menu-card-icon">🤖</div>
+          <div class="menu-card-title">vs Computer</div>
+          <div class="menu-card-desc">Practice against the AI</div>
+        </div>
+        <div class="menu-card" onclick="openModal('random')">
+          <div class="menu-card-icon">🌐</div>
+          <div class="menu-card-title">Random Match</div>
+          <div class="menu-card-desc">Play against a stranger online</div>
+        </div>
+      </div>
+      <p class="join-hint" id="join-link-hint"></p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ MODAL ═════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal(event)">
+    <div class="modal-box">
+      <h2 id="modal-title">Enter Your Name</h2>
+      <div class="modal-form">
+        <input id="inp-name" type="text" placeholder="Your name…" maxlength="18" autocomplete="off">
+        <input id="inp-code" type="text" placeholder="Room code…" maxlength="10" autocomplete="off" class="hidden">
+      </div>
+      <div class="modal-btns">
+        <button class="btn btn-primary" id="btn-modal-go" onclick="modalGo()">Play!</button>
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      </div>
+      <p id="modal-error" class="modal-error"></p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ LOBBY ═════════════════════════════ -->
+  <div id="screen-lobby" class="screen">
+    <div class="lobby-wrap">
+      <h2 class="lobby-title">Waiting Room</h2>
+      <div class="room-code-box">
+        <span class="room-code-label">Room Code</span>
+        <span class="room-code-value" id="lobby-code">——</span>
+      </div>
+      <button class="btn btn-outline" onclick="copyLink()">📋 Copy Invite Link</button>
+      <div class="lobby-players" id="lobby-players"></div>
+      <div class="lobby-actions">
+        <button class="btn btn-primary" id="btn-start" onclick="sendStartGame()" style="display:none">Start Game</button>
+        <p id="lobby-status" class="lobby-status">Waiting for host to start…</p>
+      </div>
+      <button class="btn btn-ghost back-btn" onclick="goBack()">← Back</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ WAITING (random) ══════════════════ -->
+  <div id="screen-waiting" class="screen">
+    <div class="waiting-wrap">
+      <div class="spinner"></div>
+      <p class="waiting-msg">Finding an opponent…</p>
+      <button class="btn btn-ghost" onclick="cancelWaiting()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ FIRST PICK ══════════════════════ -->
+  <div id="screen-first-pick" class="screen">
+    <div class="pick-wrap">
+      <h2 class="pick-title">Who Goes First?</h2>
+      <p class="pick-subtitle">Click a face-down card to pick it — highest <em>unique</em> value goes first</p>
+      <div class="pick-pool" id="pick-pool"></div>
+      <div class="pick-results" id="pick-results"></div>
+      <div class="pick-legend">
+        <span>A=14 (high) &nbsp;|&nbsp; K=13 &nbsp;|&nbsp; Q=12 &nbsp;|&nbsp; J=11 &nbsp;|&nbsp; 2–10=face value</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ GAME ══════════════════════════════ -->
+  <div id="screen-game" class="screen">
+    <div class="game-layout">
+
+      <!-- Header bar -->
+      <div class="game-header">
+        <div class="game-header-left">
+          <span class="header-logo">CARCASS</span>
+          <span class="header-round" id="header-round">Round 1</span>
+        </div>
+        <div class="game-header-center" id="header-scores"></div>
+        <div class="game-header-right">
+          <span class="turn-badge" id="turn-badge">—</span>
+        </div>
+      </div>
+
+      <!-- Opponents row -->
+      <div class="opponents-row" id="opponents-row"></div>
+
+      <!-- Table center -->
+      <div class="table-center">
+        <div class="deck-zone">
+          <div class="deck-pile-visual" id="deck-vis">
+            <div class="card card-back"></div>
+          </div>
+          <div class="deck-label" id="deck-label">52 cards</div>
+        </div>
+        <div class="carcass-zone">
+          <div class="zone-label">✦ THE CARCASS ✦</div>
+          <div class="carcass-cards" id="carcass-cards"></div>
+        </div>
+      </div>
+
+      <!-- Player zone -->
+      <div class="player-zone">
+        <div class="player-header">
+          <span id="you-name">You</span>
+          <span class="score-pill" id="you-score">0 pts</span>
+          <span class="sets-pill" id="you-sets">0 sets</span>
+        </div>
+
+        <!-- Claimed sets display -->
+        <div class="your-sets-row" id="your-sets-row"></div>
+
+        <!-- Hand -->
+        <div class="zone-label">YOUR HAND</div>
+        <div class="hand-cards" id="hand-cards"></div>
+
+        <!-- Action panel -->
+        <div class="action-panel" id="action-panel">
+          <!-- Normal mode -->
+          <div id="panel-normal">
+            <div class="sel-info" id="sel-info">Select cards from your hand to make 21</div>
+            <div class="action-btns">
+              <button class="btn btn-green" id="btn-claim" onclick="claimSet()" disabled>Claim 21!</button>
+              <button class="btn btn-amber" id="btn-swap-mode" onclick="enterSwapMode()">Swap with Carcass</button>
+              <button class="btn btn-replace" id="btn-replace" onclick="replaceHand()" title="Only available when you cannot make 21 with your hand or the Carcass">Replace Hand 🔄</button>
+              <button class="btn btn-blue" id="btn-end-turn" onclick="endTurn()">End Turn &amp; Draw</button>
+            </div>
+          </div>
+          <!-- Swap mode -->
+          <div id="panel-swap" class="hidden">
+            <div class="swap-instructions">
+              <strong>Swap Mode:</strong> Click Carcass cards to take (🟡), then your hand cards to give (🟠). Equal counts required.
+            </div>
+            <div class="sel-info" id="swap-info">None selected</div>
+            <div class="action-btns">
+              <button class="btn btn-amber" id="btn-confirm-swap" onclick="confirmSwap()" disabled>Confirm Swap</button>
+              <button class="btn btn-ghost" onclick="cancelSwapMode()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Log -->
+      <div class="game-log" id="game-log"></div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ ROUND END ═════════════════════════ -->
+  <div id="screen-round-end" class="screen">
+    <div class="end-wrap">
+      <h2>Round Over!</h2>
+      <div id="round-results"></div>
+      <div class="ready-area">
+        <button class="btn btn-primary" id="btn-ready" onclick="readyNextRound()">Ready for Next Round</button>
+        <p class="ready-status" id="ready-status"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ GAME END ══════════════════════════ -->
+  <div id="screen-game-end" class="screen">
+    <div class="end-wrap">
+      <h2 id="game-end-title">Game Over!</h2>
+      <div class="winner-display" id="winner-display"></div>
+      <div id="final-scores"></div>
+      <button class="btn btn-primary" onclick="location.reload()">Play Again</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toasts"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
