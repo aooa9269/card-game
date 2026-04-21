@@ -1641,17 +1641,20 @@ function handleGuestMessage(fromPeerId, data) {
 }
 
 function attachGuestConn(conn) {
+  // Store immediately so sendToGuest() works the moment data arrives
+  // (don't wait for 'open' — data can't arrive before open anyway,
+  //  but some PeerJS versions fire 'open' late on the host side)
+  guestConns.set(conn.peer, conn);
+
   conn.on('open', () => {
-    guestConns.set(conn.peer, conn);
     if (room && room.players.length >= 6) {
       conn.send({ type: 'error', message: 'Room is full.' });
-      conn.close();
-      guestConns.delete(conn.peer);
+      setTimeout(() => { conn.close(); guestConns.delete(conn.peer); }, 200);
     }
   });
   conn.on('data', (data) => handleGuestMessage(conn.peer, data));
   conn.on('close', () => handleGuestDisconnect(conn.peer));
-  conn.on('error', (e) => { console.warn('Guest conn error:', e); handleGuestDisconnect(conn.peer); });
+  conn.on('error', (e) => { console.warn('Guest conn error:', e.type); handleGuestDisconnect(conn.peer); });
 }
 
 // Start as a named private-room host
@@ -1679,6 +1682,13 @@ function startAsHost(mode) {
     }
   });
 
+  // Auto-reconnect to signaling server if we drop — keeps the room code alive
+  peer.on('disconnected', () => {
+    if (peer && !peer.destroyed) {
+      setTimeout(() => { try { peer.reconnect(); } catch(e) {} }, 1500);
+    }
+  });
+
   peer.on('connection', (conn) => {
     if (room && room.phase !== 'lobby') {
       conn.on('open', () => {
@@ -1691,13 +1701,14 @@ function startAsHost(mode) {
   });
 
   peer.on('error', (err) => {
-    console.error('Peer error:', err);
+    console.error('Peer error:', err.type);
     if (err.type === 'unavailable-id') {
       toast('Room code conflict — try again.', 'error');
+    } else if (err.type === 'network' || err.type === 'server-error') {
+      // Non-fatal: peer will try to reconnect
     } else {
-      toast('Connection error: ' + (err.message || err.type), 'error');
+      toast('Connection error: ' + err.type, 'error');
     }
-    showScreen('screen-landing');
   });
 }
 
@@ -1715,6 +1726,12 @@ function startAsRandomHost() {
     room.addPlayer(myId, myName);
     showScreen('screen-waiting');
     $('waiting-msg').textContent = 'Waiting for an opponent…';
+  });
+
+  peer.on('disconnected', () => {
+    if (peer && !peer.destroyed) {
+      setTimeout(() => { try { peer.reconnect(); } catch(e) {} }, 1500);
+    }
   });
 
   peer.on('connection', (conn) => {
@@ -1797,17 +1814,9 @@ function attachAsGuest(conn, hostPeerId) {
   });
 
   conn.on('error', (e) => {
-    toast('Connection error', 'error');
+    toast('Connection lost', 'error');
     showScreen('screen-landing');
   });
-
-  // Timeout if we can't connect
-  setTimeout(() => {
-    if (!conn.open) {
-      toast('Could not reach that room. Check the code.', 'error');
-      showScreen('screen-landing');
-    }
-  }, 7000);
 }
 
 function connectAsGuest(code) {
@@ -1821,7 +1830,13 @@ function connectAsGuest(code) {
     attachAsGuest(conn, hostPeerId);
   });
   peer.on('error', (err) => {
-    toast('Could not connect: ' + (err.message || err.type), 'error');
+    if (err.type === 'peer-unavailable') {
+      toast('Room not found — check the code and make sure the host is still on the lobby screen.', 'error', 5000);
+    } else if (err.type === 'network') {
+      toast('Network error. Check your connection and try again.', 'error');
+    } else {
+      toast('Could not connect: ' + err.type, 'error');
+    }
     showScreen('screen-landing');
   });
 }
