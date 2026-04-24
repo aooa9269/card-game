@@ -722,6 +722,190 @@ body {
   .action-btns { grid-template-columns: 1fr 1fr; }
   .btn { font-size: 0.72rem; padding: 10px 6px; }
 }
+
+/* ── Account button (top-right of landing) ──────────────────────────────────── */
+.account-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(212,160,23,0.3);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: var(--gold-bright);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  z-index: 10;
+}
+.account-btn:hover { background: rgba(212,160,23,0.15); border-color: var(--gold-bright); }
+
+/* ── Leaderboard screen ───────────────────────────────────────────────────── */
+#screen-leaderboard {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+  overflow-y: auto;
+  background: radial-gradient(ellipse at 50% 30%, #2d5a27 0%, #1a3a1a 70%, #0d1f0d 100%);
+}
+.lb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 640px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.lb-header h2 { color: var(--gold-bright); font-size: 1.5rem; }
+.lb-tabs {
+  display: flex;
+  gap: 8px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  padding: 4px;
+}
+.lb-tab {
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.55);
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.lb-tab.active { background: var(--gold); color: #000; font-weight: bold; }
+.lb-table-wrap {
+  width: 100%;
+  max-width: 640px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(212,160,23,0.25);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.lb-table th {
+  background: rgba(0,0,0,0.4);
+  padding: 10px 14px;
+  text-align: left;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: normal;
+}
+.lb-table td {
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  color: var(--white);
+}
+.lb-table tr:hover td { background: rgba(255,255,255,0.04); }
+.lb-table .lb-rank { color: rgba(255,255,255,0.4); width: 36px; }
+.lb-table .lb-name { font-weight: bold; }
+.lb-table .lb-you td { color: var(--gold-bright); }
+.lb-rank-1 { color: #ffd700 !important; }
+.lb-rank-2 { color: #c0c0c0 !important; }
+.lb-rank-3 { color: #cd7f32 !important; }
+.lb-empty { text-align: center; padding: 32px; color: rgba(255,255,255,0.4); font-size: 0.9rem; }
+.lb-loading { text-align: center; padding: 32px; color: rgba(255,255,255,0.5); }
+.lb-back-row { display: flex; justify-content: flex-start; width: 100%; max-width: 640px; margin-top: 14px; }
+
+/* ── Account screen ───────────────────────────────────────────────────────── */
+#screen-account {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: radial-gradient(ellipse at 50% 30%, #2d5a27 0%, #1a3a1a 70%, #0d1f0d 100%);
+}
+.account-card {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(212,160,23,0.35);
+  border-radius: 16px;
+  padding: 32px 36px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.account-card h2 { color: var(--gold-bright); text-align: center; }
+.account-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  gap: 0;
+  margin-bottom: 4px;
+}
+.account-tab {
+  flex: 1;
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.5);
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.2s;
+}
+.account-tab.active { color: var(--gold-bright); border-bottom-color: var(--gold-bright); }
+.account-form { display: flex; flex-direction: column; gap: 10px; }
+.account-form input {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  color: var(--white);
+  font-size: 0.95rem;
+  padding: 12px 14px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.account-form input:focus { border-color: var(--gold); }
+.account-form input::placeholder { color: rgba(255,255,255,0.3); }
+.account-error { color: #ff7070; font-size: 0.82rem; text-align: center; min-height: 1em; }
+.profile-section { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.profile-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #000;
+}
+.profile-name { font-size: 1.2rem; color: var(--gold-bright); font-weight: bold; }
+.profile-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+.stat-box {
+  background: rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+.stat-box-val { font-size: 1.4rem; font-weight: bold; color: var(--gold-bright); }
+.stat-box-label { font-size: 0.72rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -729,6 +913,10 @@ body {
 <!-- ═══════════════════════════════════ LANDING ════════════════════════════ -->
 <div id="screen-landing" class="screen active">
   <div class="landing-bg"></div>
+  <button class="account-btn" id="account-btn" onclick="showAccount()">
+    <span id="account-btn-icon">👤</span>
+    <span id="account-btn-label">Sign In</span>
+  </button>
   <div class="landing-content">
     <h1 class="title-logo">CARCASS</h1>
     <p class="title-sub">The 21 Community Card Game</p>
@@ -752,6 +940,11 @@ body {
         <div class="menu-card-icon">🌐</div>
         <div class="menu-card-title">Random Match</div>
         <div class="menu-card-desc">Play against a stranger</div>
+      </div>
+      <div class="menu-card" onclick="showLeaderboard()">
+        <div class="menu-card-icon">🏆</div>
+        <div class="menu-card-title">Leaderboard</div>
+        <div class="menu-card-desc">Top players worldwide</div>
       </div>
     </div>
     <p class="join-hint" id="join-link-hint"></p>
@@ -900,12 +1093,341 @@ body {
   </div>
 </div>
 
+<!-- ═══════════════════════════════════ LEADERBOARD ═══════════════════════ -->
+<div id="screen-leaderboard" class="screen">
+  <div class="lb-header">
+    <h2>🏆 Leaderboard</h2>
+    <div class="lb-tabs">
+      <button class="lb-tab active" onclick="switchLbTab('wins',this)">Wins</button>
+      <button class="lb-tab" onclick="switchLbTab('totalPoints',this)">Points</button>
+      <button class="lb-tab" onclick="switchLbTab('gamesPlayed',this)">Games</button>
+    </div>
+  </div>
+  <div class="lb-table-wrap">
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th class="lb-rank">#</th>
+          <th>Player</th>
+          <th id="lb-col-wins">Wins</th>
+          <th id="lb-col-pts">Points</th>
+          <th id="lb-col-games">Games</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body">
+        <tr><td colspan="5" class="lb-loading">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="lb-back-row">
+    <button class="btn btn-ghost" onclick="showScreen('screen-landing')">← Back</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ ACCOUNT ══════════════════════════ -->
+<div id="screen-account" class="screen">
+  <div class="account-card" id="account-card-inner">
+    <!-- Content swapped by JS depending on auth state -->
+  </div>
+  <div style="margin-top:14px">
+    <button class="btn btn-ghost" onclick="showScreen('screen-landing')">← Back</button>
+  </div>
+</div>
+
 <!-- Toast container -->
 <div id="toasts"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 'use strict';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FIREBASE CONFIG
+// 1. Go to https://console.firebase.google.com and create a project
+// 2. Add a Web App, copy the firebaseConfig object here
+// 3. In Firestore, create a database (start in production mode)
+// 4. Set these Firestore rules:
+//    rules_version = '2';
+//    service cloud.firestore {
+//      match /databases/{database}/documents {
+//        match /users/{uid} {
+//          allow read: if true;
+//          allow write: if request.auth != null && request.auth.uid == uid;
+//        }
+//      }
+//    }
+// ═══════════════════════════════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId:             "YOUR_APP_ID"
+};
+
+let db = null, fbAuth = null, currentUser = null;
+
+function firebaseReady() { return db !== null && fbAuth !== null; }
+
+function initFirebase() {
+  try {
+    if (typeof firebase === 'undefined') return;
+    if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') return; // not configured yet
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    fbAuth = firebase.auth();
+    fbAuth.onAuthStateChanged(user => {
+      currentUser = user;
+      updateAccountButton();
+    });
+  } catch(e) { console.warn('Firebase init:', e.message); }
+}
+
+function updateAccountButton() {
+  const label = document.getElementById('account-btn-label');
+  const icon  = document.getElementById('account-btn-icon');
+  if (!label) return;
+  if (currentUser) {
+    const name = currentUser.displayName || currentUser.email?.split('@')[0] || 'You';
+    label.textContent = name.length > 12 ? name.slice(0,12) + '…' : name;
+    icon.textContent = '✅';
+  } else {
+    label.textContent = 'Sign In';
+    icon.textContent = '👤';
+  }
+}
+
+// ── Auth helpers ─────────────────────────────────────────────────────────────
+
+function getAccountCard() { return document.getElementById('account-card-inner'); }
+
+function showAccount() {
+  showScreen('screen-account');
+  if (!firebaseReady()) {
+    getAccountCard().innerHTML = `
+      <h2>Account</h2>
+      <p style="color:rgba(255,255,255,0.55);font-size:0.88rem;text-align:center;line-height:1.6">
+        The leaderboard is not set up yet.<br>
+        See the code comments for setup instructions.
+      </p>`;
+    return;
+  }
+  if (currentUser) renderProfile();
+  else renderAuthForm('signin');
+}
+
+function renderAuthForm(tab) {
+  getAccountCard().innerHTML = `
+    <h2>Account</h2>
+    <div class="account-tabs">
+      <button class="account-tab${tab==='signin'?' active':''}" onclick="renderAuthForm('signin')">Sign In</button>
+      <button class="account-tab${tab==='signup'?' active':''}" onclick="renderAuthForm('signup')">Create Account</button>
+    </div>
+    ${tab === 'signup' ? `
+    <div class="account-form" id="auth-form">
+      <input id="auth-display" type="text" placeholder="Display name…" maxlength="20" autocomplete="off">
+      <input id="auth-email" type="email" placeholder="Email…" autocomplete="email">
+      <input id="auth-pass" type="password" placeholder="Password (6+ chars)…" autocomplete="new-password">
+      <button class="btn btn-primary" onclick="doSignUp()">Create Account</button>
+    </div>` : `
+    <div class="account-form" id="auth-form">
+      <input id="auth-email" type="email" placeholder="Email…" autocomplete="email">
+      <input id="auth-pass" type="password" placeholder="Password…" autocomplete="current-password">
+      <button class="btn btn-primary" onclick="doSignIn()">Sign In</button>
+    </div>`}
+    <p id="auth-error" class="account-error"></p>`;
+}
+
+function renderProfile() {
+  if (!currentUser) return;
+  const name = currentUser.displayName || currentUser.email?.split('@')[0] || 'Player';
+  const initial = name[0].toUpperCase();
+  getAccountCard().innerHTML = `
+    <div class="profile-section">
+      <div class="profile-avatar">${initial}</div>
+      <div class="profile-name">${name}</div>
+    </div>
+    <div class="profile-stats" id="profile-stats">
+      <div class="stat-box"><div class="stat-box-val">—</div><div class="stat-box-label">Wins</div></div>
+      <div class="stat-box"><div class="stat-box-val">—</div><div class="stat-box-label">Games</div></div>
+      <div class="stat-box"><div class="stat-box-val">—</div><div class="stat-box-label">Points</div></div>
+      <div class="stat-box"><div class="stat-box-val">—</div><div class="stat-box-label">Best Game</div></div>
+    </div>
+    <button class="btn btn-ghost" onclick="doSignOut()">Sign Out</button>`;
+  loadProfileStats();
+}
+
+async function loadProfileStats() {
+  if (!currentUser || !db) return;
+  try {
+    const doc = await db.collection('users').doc(currentUser.uid).get();
+    if (!doc.exists) return;
+    const d = doc.data();
+    const boxes = document.querySelectorAll('#profile-stats .stat-box-val');
+    if (boxes.length === 4) {
+      boxes[0].textContent = d.wins ?? 0;
+      boxes[1].textContent = d.gamesPlayed ?? 0;
+      boxes[2].textContent = d.totalPoints ?? 0;
+      boxes[3].textContent = d.bestGameScore ?? 0;
+    }
+  } catch(e) {}
+}
+
+async function doSignUp() {
+  const name  = document.getElementById('auth-display')?.value.trim();
+  const email = document.getElementById('auth-email')?.value.trim();
+  const pass  = document.getElementById('auth-pass')?.value;
+  const errEl = document.getElementById('auth-error');
+  if (!name) { errEl.textContent = 'Display name is required.'; return; }
+  if (!email) { errEl.textContent = 'Email is required.'; return; }
+  if (!pass || pass.length < 6) { errEl.textContent = 'Password must be 6+ characters.'; return; }
+  errEl.textContent = '';
+  try {
+    const cred = await fbAuth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: name });
+    await db.collection('users').doc(cred.user.uid).set({
+      displayName: name,
+      wins: 0, gamesPlayed: 0, totalPoints: 0, bestGameScore: 0,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    currentUser = fbAuth.currentUser;
+    toast('Account created! Welcome, ' + name + '!', 'success');
+    renderProfile();
+    updateAccountButton();
+  } catch(e) {
+    errEl.textContent = friendlyAuthError(e.code);
+  }
+}
+
+async function doSignIn() {
+  const email = document.getElementById('auth-email')?.value.trim();
+  const pass  = document.getElementById('auth-pass')?.value;
+  const errEl = document.getElementById('auth-error');
+  if (!email || !pass) { errEl.textContent = 'Email and password required.'; return; }
+  errEl.textContent = '';
+  try {
+    await fbAuth.signInWithEmailAndPassword(email, pass);
+    toast('Signed in!', 'success');
+    renderProfile();
+    updateAccountButton();
+  } catch(e) {
+    errEl.textContent = friendlyAuthError(e.code);
+  }
+}
+
+async function doSignOut() {
+  await fbAuth.signOut();
+  currentUser = null;
+  updateAccountButton();
+  renderAuthForm('signin');
+  toast('Signed out.', 'info');
+}
+
+function friendlyAuthError(code) {
+  const map = {
+    'auth/email-already-in-use': 'That email is already registered.',
+    'auth/invalid-email':        'Invalid email address.',
+    'auth/weak-password':        'Password is too weak.',
+    'auth/user-not-found':       'No account found with that email.',
+    'auth/wrong-password':       'Incorrect password.',
+    'auth/invalid-credential':   'Incorrect email or password.',
+    'auth/too-many-requests':    'Too many attempts — try again later.',
+  };
+  return map[code] || 'Error: ' + code;
+}
+
+// ── Stat saving ───────────────────────────────────────────────────────────────
+
+async function saveGameStats(won, pointsEarned) {
+  if (!currentUser || !db) return;
+  try {
+    const ref = db.collection('users').doc(currentUser.uid);
+    await db.runTransaction(async tx => {
+      const doc = await tx.get(ref);
+      if (!doc.exists) {
+        tx.set(ref, {
+          displayName: currentUser.displayName || 'Player',
+          wins: won ? 1 : 0,
+          gamesPlayed: 1,
+          totalPoints: pointsEarned,
+          bestGameScore: pointsEarned,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } else {
+        const d = doc.data();
+        tx.update(ref, {
+          displayName: currentUser.displayName || d.displayName || 'Player',
+          wins: (d.wins || 0) + (won ? 1 : 0),
+          gamesPlayed: (d.gamesPlayed || 0) + 1,
+          totalPoints: (d.totalPoints || 0) + pointsEarned,
+          bestGameScore: Math.max(d.bestGameScore || 0, pointsEarned)
+        });
+      }
+    });
+  } catch(e) { console.warn('saveGameStats:', e); }
+}
+
+// ── Leaderboard ───────────────────────────────────────────────────────────────
+
+let lbSortField = 'wins';
+
+async function showLeaderboard() {
+  showScreen('screen-leaderboard');
+  await loadLeaderboard();
+}
+
+function switchLbTab(field, btn) {
+  lbSortField = field;
+  document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  loadLeaderboard();
+}
+
+async function loadLeaderboard() {
+  const tbody = document.getElementById('lb-body');
+  if (!tbody) return;
+  if (!firebaseReady()) {
+    tbody.innerHTML = `<tr><td colspan="5" class="lb-empty">Leaderboard not configured yet.<br>See code comments for Firebase setup.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = `<tr><td colspan="5" class="lb-loading">Loading…</td></tr>`;
+  try {
+    const snap = await db.collection('users')
+      .orderBy(lbSortField, 'desc')
+      .limit(20)
+      .get();
+    if (snap.empty) {
+      tbody.innerHTML = `<tr><td colspan="5" class="lb-empty">No players yet — be the first!</td></tr>`;
+      return;
+    }
+    const rankEmoji = ['🥇','🥈','🥉'];
+    let html = '';
+    snap.docs.forEach((doc, i) => {
+      const d = doc.data();
+      const isMe = currentUser && doc.id === currentUser.uid;
+      const rankClass = i < 3 ? ` class="lb-rank-${i+1}"` : '';
+      const rowClass  = isMe ? ' class="lb-you"' : '';
+      html += `<tr${rowClass}>
+        <td class="lb-rank"${rankClass}>${rankEmoji[i] || (i+1)}</td>
+        <td class="lb-name">${escHtml(d.displayName || 'Player')}${isMe ? ' 👈' : ''}</td>
+        <td>${d.wins ?? 0}</td>
+        <td>${d.totalPoints ?? 0}</td>
+        <td>${d.gamesPlayed ?? 0}</td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="5" class="lb-empty">Could not load leaderboard.</td></tr>`;
+  }
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GAME LOGIC  (ported from server.js — runs on the host client)
@@ -2306,8 +2828,9 @@ function renderRoundEnd(state) {
 function renderGameEnd(state) {
   const sorted = [...state.players].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
-  $('game-end-title').textContent = winner.id === myId ? '🏆 You Win!' : `${winner.name} Wins!`;
-  $('winner-display').textContent = winner.id === myId ? '🎉' : '🃏';
+  const iWon = winner.id === myId;
+  $('game-end-title').textContent = iWon ? '🏆 You Win!' : `${winner.name} Wins!`;
+  $('winner-display').textContent = iWon ? '🎉' : '🃏';
   let html = `<table class="scores-table">
     <thead><tr><th>Player</th><th>Score</th></tr></thead><tbody>`;
   sorted.forEach((p, i) => {
@@ -2319,6 +2842,12 @@ function renderGameEnd(state) {
   html += '</tbody></table>';
   $('final-scores').innerHTML = html;
   showScreen('screen-game-end');
+  // Save stats for signed-in players (non-AI games only)
+  const me = state.players.find(p => p.id === myId);
+  if (me && !me.isAI) {
+    const humanCount = state.players.filter(p => !p.isAI).length;
+    if (humanCount >= 1) saveGameStats(iWon, me.score || 0);
+  }
 }
 
 function readyNextRound() {
@@ -2374,6 +2903,7 @@ function onGameState(state) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 window.addEventListener('load', () => {
+  initFirebase();
   const params = new URLSearchParams(window.location.search);
   const joinCode = params.get('join');
   if (joinCode) {
