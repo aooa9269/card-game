@@ -1463,81 +1463,49 @@ body {
 <!-- Toast container -->
 <div id="toasts"></div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 'use strict';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FIREBASE CONFIG
-// 1. Go to https://console.firebase.google.com and create a project
-// 2. Add a Web App, copy the firebaseConfig object here
-// 3. In Firestore, create a database (start in production mode)
-// 4. Set these Firestore rules:
-//    rules_version = '2';
-//    service cloud.firestore {
-//      match /databases/{database}/documents {
-//        match /users/{uid} {
-//          allow read: if true;
-//          allow write: if request.auth != null && (
-//            request.auth.uid == uid ||
-//            exists(/databases/$(database)/documents/moderators/$(request.auth.uid)) ||
-//            request.auth.uid == 'YOUR_UID_HERE'
-//          );
-//        }
-//        match /moderators/{uid} {
-//          allow read: if request.auth != null;
-//          allow write: if request.auth != null && (
-//            request.auth.uid == 'YOUR_UID_HERE' ||
-//            get(/databases/$(database)/documents/moderators/$(request.auth.uid)).data.permissions.hasAny(['manage-mods','all'])
-//          );
-//        }
-//      }
-//    }
-// Replace 'YOUR_UID_HERE' in the rules AND in ROOT_MOD_UID below with your actual UID.
 // ═══════════════════════════════════════════════════════════════════════════════
-const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
-};
+// LOCAL STORAGE KEYS
+// ═══════════════════════════════════════════════════════════════════════════════
+const LS_PLAYER   = 'carcass-player';   // { name, pin }
+const LS_LB       = 'carcass-lb';       // array of { name, wins, gamesPlayed, totalPoints, bestGameScore }
+const LS_BANNED   = 'carcass-banned';   // array of names
+const LS_MODS     = 'carcass-mods';     // array of { name, permissions[] }
 
-let db = null, fbAuth = null, currentUser = null;
+// Root moderator — only this display name has full mod access
+const ROOT_MOD_NAME = 'AOOA926';
 
-function firebaseReady() { return db !== null && fbAuth !== null; }
+// currentUser shape: { name: string }
+let currentUser = null;
 
-function initFirebase() {
-  try {
-    if (typeof firebase === 'undefined') return;
-    if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') return; // not configured yet
-    firebase.initializeApp(FIREBASE_CONFIG);
-    db = firebase.firestore();
-    fbAuth = firebase.auth();
-    fbAuth.onAuthStateChanged(user => {
-      currentUser = user;
-      modPermsCache = null;
-      if (user) checkModStatus();
-      else { modPermsCache = false; updateAccountButton(); updateModGameBtn(); }
-    });
-  } catch(e) { console.warn('Firebase init:', e.message); }
+function lsGet(key) { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; } }
+function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+
+function getLb()      { return lsGet(LS_LB)     || []; }
+function getBanned()  { return lsGet(LS_BANNED)  || []; }
+function getMods()    { return lsGet(LS_MODS)    || []; }
+
+function getLbEntry(name) {
+  return getLb().find(e => e.name === name) || { name, wins:0, gamesPlayed:0, totalPoints:0, bestGameScore:0 };
 }
 
-function updateAccountButton() {
-  const label = document.getElementById('account-btn-label');
-  const icon  = document.getElementById('account-btn-icon');
-  if (!label) return;
-  if (currentUser) {
-    const name = currentUser.displayName || currentUser.email?.split('@')[0] || 'You';
-    label.textContent = name.length > 12 ? name.slice(0,12) + '…' : name;
-    icon.textContent = '✅';
-  } else {
-    label.textContent = 'Sign In';
-    icon.textContent = '👤';
+function saveLbEntry(entry) {
+  const lb = getLb();
+  const idx = lb.findIndex(e => e.name === entry.name);
+  if (idx >= 0) lb[idx] = entry; else lb.push(entry);
+  lsSet(LS_LB, lb);
+}
+
+function initLocalAuth() {
+  const saved = lsGet(LS_PLAYER);
+  if (saved?.name) {
+    currentUser = { name: saved.name };
+    checkModStatus();
+    updateAccountButton();
   }
 }
 
@@ -1547,187 +1515,93 @@ function getAccountCard() { return document.getElementById('account-card-inner')
 
 function showAccount() {
   showScreen('screen-account');
-  if (!firebaseReady()) {
-    getAccountCard().innerHTML = `
-      <h2>Account</h2>
-      <p style="color:rgba(255,255,255,0.55);font-size:0.88rem;text-align:center;line-height:1.6">
-        The leaderboard is not set up yet.<br>
-        See the code comments for setup instructions.
-      </p>`;
-    return;
-  }
   if (currentUser) renderProfile();
-  else renderAuthForm('signin');
+  else renderAuthForm();
 }
 
-function renderAuthForm(tab) {
+function renderAuthForm() {
   getAccountCard().innerHTML = `
     <h2>Account</h2>
-    <div class="account-tabs">
-      <button class="account-tab${tab==='signin'?' active':''}" onclick="renderAuthForm('signin')">Sign In</button>
-      <button class="account-tab${tab==='signup'?' active':''}" onclick="renderAuthForm('signup')">Create Account</button>
+    <p style="font-size:0.82rem;color:rgba(255,255,255,0.45);text-align:center;line-height:1.5">
+      Choose a display name to track your stats and appear on the leaderboard.
+    </p>
+    <div class="account-form">
+      <input id="auth-display" type="text" placeholder="Display name…" maxlength="20"
+        autocomplete="off" autocorrect="off" autocapitalize="words">
+      <input id="auth-pin" type="password" placeholder="PIN (optional — locks your name on this device)" maxlength="20">
+      <button class="btn btn-primary" onclick="doSignIn()">Save & Play</button>
     </div>
-    ${tab === 'signup' ? `
-    <div class="account-form" id="auth-form">
-      <input id="auth-display" type="text" placeholder="Display name…" maxlength="20" autocomplete="off">
-      <input id="auth-email" type="email" placeholder="Email…" autocomplete="email">
-      <input id="auth-pass" type="password" placeholder="Password (6+ chars)…" autocomplete="new-password">
-      <button class="btn btn-primary" onclick="doSignUp()">Create Account</button>
-    </div>` : `
-    <div class="account-form" id="auth-form">
-      <input id="auth-email" type="email" placeholder="Email…" autocomplete="email">
-      <input id="auth-pass" type="password" placeholder="Password…" autocomplete="current-password">
-      <button class="btn btn-primary" onclick="doSignIn()">Sign In</button>
-    </div>`}
     <p id="auth-error" class="account-error"></p>`;
 }
 
 function renderProfile() {
   if (!currentUser) return;
-  const name = currentUser.displayName || currentUser.email?.split('@')[0] || 'Player';
+  const name    = currentUser.name;
   const initial = name[0].toUpperCase();
-  const isMod = modPermsCache && modPermsCache.length > 0;
+  const isMod   = hasPerm('ban') || hasPerm('game-control') || hasPerm('manage-mods') || hasPerm('reset-stats');
+  const stats   = getLbEntry(name);
   getAccountCard().innerHTML = `
     <div class="profile-section">
-      <div class="profile-avatar">${initial}</div>
+      <div class="profile-avatar">${escHtml(initial)}</div>
       <div class="profile-name">${escHtml(name)}${isMod ? ' <span class="mod-badge">MOD</span>' : ''}</div>
     </div>
-    <div class="profile-stats" id="profile-stats">
-      <div class="stat-box"><div class="stat-box-val">—</div><div class="stat-box-label">Wins</div></div>
-      <div class="stat-box"><div class="stat-box-val">—</div><div class="stat-box-label">Games</div></div>
-      <div class="stat-box"><div class="stat-box-val">—</div><div class="stat-box-label">Points</div></div>
-      <div class="stat-box"><div class="stat-box-val">—</div><div class="stat-box-label">Best Game</div></div>
-    </div>
-    <div class="uid-box" onclick="copyUidToClipboard('${currentUser.uid}')" title="Click to copy your UID">
-      UID: ${currentUser.uid}<br><span style="font-size:0.65rem;opacity:0.6">Click to copy — needed for ROOT_MOD_UID</span>
+    <div class="profile-stats">
+      <div class="stat-box"><div class="stat-box-val">${stats.wins}</div><div class="stat-box-label">Wins</div></div>
+      <div class="stat-box"><div class="stat-box-val">${stats.gamesPlayed}</div><div class="stat-box-label">Games</div></div>
+      <div class="stat-box"><div class="stat-box-val">${stats.totalPoints}</div><div class="stat-box-label">Points</div></div>
+      <div class="stat-box"><div class="stat-box-val">${stats.bestGameScore}</div><div class="stat-box-label">Best Game</div></div>
     </div>
     ${isMod ? `<button class="btn btn-primary" style="background:#b71c1c;border-color:#b71c1c" onclick="showModPanel()">⚑ Open Mod Panel</button>` : ''}
     <button class="btn btn-ghost" onclick="doSignOut()">Sign Out</button>`;
-  loadProfileStats();
 }
 
-async function loadProfileStats() {
-  if (!currentUser || !db) return;
-  try {
-    const doc = await db.collection('users').doc(currentUser.uid).get();
-    if (!doc.exists) return;
-    const d = doc.data();
-    const boxes = document.querySelectorAll('#profile-stats .stat-box-val');
-    if (boxes.length === 4) {
-      boxes[0].textContent = d.wins ?? 0;
-      boxes[1].textContent = d.gamesPlayed ?? 0;
-      boxes[2].textContent = d.totalPoints ?? 0;
-      boxes[3].textContent = d.bestGameScore ?? 0;
-    }
-  } catch(e) {}
-}
-
-async function doSignUp() {
-  const name  = document.getElementById('auth-display')?.value.trim();
-  const email = document.getElementById('auth-email')?.value.trim();
-  const pass  = document.getElementById('auth-pass')?.value;
-  const errEl = document.getElementById('auth-error');
-  if (!name) { errEl.textContent = 'Display name is required.'; return; }
-  if (!email) { errEl.textContent = 'Email is required.'; return; }
-  if (!pass || pass.length < 6) { errEl.textContent = 'Password must be 6+ characters.'; return; }
-  errEl.textContent = '';
-  try {
-    const cred = await fbAuth.createUserWithEmailAndPassword(email, pass);
-    await cred.user.updateProfile({ displayName: name });
-    await db.collection('users').doc(cred.user.uid).set({
-      displayName: name,
-      wins: 0, gamesPlayed: 0, totalPoints: 0, bestGameScore: 0,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    currentUser = fbAuth.currentUser;
-    toast('Account created! Welcome, ' + name + '!', 'success');
-    renderProfile();
-    updateAccountButton();
-  } catch(e) {
-    errEl.textContent = friendlyAuthError(e.code);
+function doSignIn() {
+  const name   = document.getElementById('auth-display')?.value.trim();
+  const pin    = document.getElementById('auth-pin')?.value || '';
+  const errEl  = document.getElementById('auth-error');
+  if (!name) { errEl.textContent = 'Enter a display name.'; return; }
+  // If a PIN was set for this name, verify it
+  const saved = lsGet(LS_PLAYER);
+  if (saved?.name === name && saved?.pin && saved.pin !== pin) {
+    errEl.textContent = 'Wrong PIN for that name.'; return;
   }
-}
-
-async function doSignIn() {
-  const email = document.getElementById('auth-email')?.value.trim();
-  const pass  = document.getElementById('auth-pass')?.value;
-  const errEl = document.getElementById('auth-error');
-  if (!email || !pass) { errEl.textContent = 'Email and password required.'; return; }
-  errEl.textContent = '';
-  try {
-    await fbAuth.signInWithEmailAndPassword(email, pass);
-    toast('Signed in!', 'success');
-    renderProfile();
-    updateAccountButton();
-  } catch(e) {
-    errEl.textContent = friendlyAuthError(e.code);
-  }
-}
-
-async function doSignOut() {
-  await fbAuth.signOut();
-  currentUser = null;
+  lsSet(LS_PLAYER, { name, pin });
+  currentUser = { name };
+  checkModStatus();
   updateAccountButton();
-  renderAuthForm('signin');
-  toast('Signed out.', 'info');
+  toast('Welcome, ' + name + '!', 'success');
+  renderProfile();
 }
 
-function friendlyAuthError(code) {
-  const map = {
-    'auth/email-already-in-use': 'That email is already registered.',
-    'auth/invalid-email':        'Invalid email address.',
-    'auth/weak-password':        'Password is too weak.',
-    'auth/user-not-found':       'No account found with that email.',
-    'auth/wrong-password':       'Incorrect password.',
-    'auth/invalid-credential':   'Incorrect email or password.',
-    'auth/too-many-requests':    'Too many attempts — try again later.',
-  };
-  return map[code] || 'Error: ' + code;
+function doSignOut() {
+  currentUser = null;
+  modPermsCache = false;
+  updateAccountButton();
+  updateModGameBtn();
+  renderAuthForm();
+  toast('Signed out.', 'info');
 }
 
 // ── Stat saving ───────────────────────────────────────────────────────────────
 
-async function saveGameStats(won, pointsEarned) {
-  if (!currentUser || !db) return;
-  // Don't save stats for banned players
-  try {
-    const doc = await db.collection('users').doc(currentUser.uid).get();
-    if (doc.exists && doc.data().banned) return;
-  } catch(e) {}
-  try {
-    const ref = db.collection('users').doc(currentUser.uid);
-    await db.runTransaction(async tx => {
-      const doc = await tx.get(ref);
-      if (!doc.exists) {
-        tx.set(ref, {
-          displayName: currentUser.displayName || 'Player',
-          wins: won ? 1 : 0,
-          gamesPlayed: 1,
-          totalPoints: pointsEarned,
-          bestGameScore: pointsEarned,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      } else {
-        const d = doc.data();
-        tx.update(ref, {
-          displayName: currentUser.displayName || d.displayName || 'Player',
-          wins: (d.wins || 0) + (won ? 1 : 0),
-          gamesPlayed: (d.gamesPlayed || 0) + 1,
-          totalPoints: (d.totalPoints || 0) + pointsEarned,
-          bestGameScore: Math.max(d.bestGameScore || 0, pointsEarned)
-        });
-      }
-    });
-  } catch(e) { console.warn('saveGameStats:', e); }
+function saveGameStats(won, pointsEarned) {
+  if (!currentUser) return;
+  if (getBanned().includes(currentUser.name)) return;
+  const entry = getLbEntry(currentUser.name);
+  entry.wins        += won ? 1 : 0;
+  entry.gamesPlayed += 1;
+  entry.totalPoints += pointsEarned;
+  entry.bestGameScore = Math.max(entry.bestGameScore, pointsEarned);
+  saveLbEntry(entry);
 }
 
 // ── Leaderboard ───────────────────────────────────────────────────────────────
 
 let lbSortField = 'wins';
 
-async function showLeaderboard() {
+function showLeaderboard() {
   showScreen('screen-leaderboard');
-  await loadLeaderboard();
+  loadLeaderboard();
 }
 
 function switchLbTab(field, btn) {
@@ -1737,43 +1611,30 @@ function switchLbTab(field, btn) {
   loadLeaderboard();
 }
 
-async function loadLeaderboard() {
+function loadLeaderboard() {
   const tbody = document.getElementById('lb-body');
   if (!tbody) return;
-  if (!firebaseReady()) {
-    tbody.innerHTML = `<tr><td colspan="5" class="lb-empty">Leaderboard not configured yet.<br>See code comments for Firebase setup.</td></tr>`;
+  const banned = getBanned();
+  const all = getLb()
+    .filter(e => !banned.includes(e.name))
+    .sort((a, b) => (b[lbSortField] || 0) - (a[lbSortField] || 0))
+    .slice(0, 20);
+  if (!all.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="lb-empty">No games played yet — be the first!</td></tr>`;
     return;
   }
-  tbody.innerHTML = `<tr><td colspan="5" class="lb-loading">Loading…</td></tr>`;
-  try {
-    const snap = await db.collection('users')
-      .orderBy(lbSortField, 'desc')
-      .limit(50)
-      .get();
-    const rankEmoji = ['🥇','🥈','🥉'];
-    let html = '';
-    const visibleDocs = snap.docs.filter(d => !d.data().banned).slice(0, 20);
-    if (!visibleDocs.length) {
-      tbody.innerHTML = `<tr><td colspan="5" class="lb-empty">No players yet — be the first!</td></tr>`;
-      return;
-    }
-    visibleDocs.forEach((doc, i) => {
-      const d = doc.data();
-      const isMe = currentUser && doc.id === currentUser.uid;
-      const rankClass = i < 3 ? ` class="lb-rank-${i+1}"` : '';
-      const rowClass  = isMe ? ' class="lb-you"' : '';
-      html += `<tr${rowClass}>
-        <td class="lb-rank"${rankClass}>${rankEmoji[i] || (i+1)}</td>
-        <td class="lb-name">${escHtml(d.displayName || 'Player')}${isMe ? ' 👈' : ''}</td>
-        <td>${d.wins ?? 0}</td>
-        <td>${d.totalPoints ?? 0}</td>
-        <td>${d.gamesPlayed ?? 0}</td>
-      </tr>`;
-    });
-    tbody.innerHTML = html;
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="5" class="lb-empty">Could not load leaderboard.</td></tr>`;
-  }
+  const rankEmoji = ['🥇','🥈','🥉'];
+  tbody.innerHTML = all.map((e, i) => {
+    const isMe = currentUser && e.name === currentUser.name;
+    const rankClass = i < 3 ? ` class="lb-rank-${i+1}"` : '';
+    return `<tr${isMe ? ' class="lb-you"' : ''}>
+      <td class="lb-rank"${rankClass}>${rankEmoji[i] || (i+1)}</td>
+      <td class="lb-name">${escHtml(e.name)}${isMe ? ' 👈' : ''}</td>
+      <td>${e.wins || 0}</td>
+      <td>${e.totalPoints || 0}</td>
+      <td>${e.gamesPlayed || 0}</td>
+    </tr>`;
+  }).join('');
 }
 
 function escHtml(s) {
@@ -1781,13 +1642,12 @@ function escHtml(s) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// MODERATOR SYSTEM
-// After signing up, go to your Profile page, copy your UID, and paste it below.
+// MODERATOR SYSTEM  (localStorage-backed)
+// Root mod is identified by display name ROOT_MOD_NAME above.
+// Delegated mods and bans are stored in localStorage on the root mod's device.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const ROOT_MOD_UID = 'YOUR_UID_HERE'; // ← paste your UID here after signing up
-
-let modPermsCache = null; // null = unchecked, false = not mod, string[] = permissions
+let modPermsCache = false;
 
 const ALL_PERMS = ['ban', 'reset-stats', 'game-control', 'manage-mods'];
 const PERM_LABELS = {
@@ -1798,7 +1658,7 @@ const PERM_LABELS = {
 };
 
 function isRootMod() {
-  return currentUser && currentUser.uid === ROOT_MOD_UID;
+  return currentUser && currentUser.name === ROOT_MOD_NAME;
 }
 
 function hasPerm(perm) {
@@ -1808,13 +1668,12 @@ function hasPerm(perm) {
   return modPermsCache.includes('all') || modPermsCache.includes(perm);
 }
 
-async function checkModStatus() {
-  if (!currentUser || !db) { modPermsCache = false; return; }
-  if (isRootMod()) { modPermsCache = ['all']; updateAccountButton(); return; }
-  try {
-    const doc = await db.collection('moderators').doc(currentUser.uid).get();
-    modPermsCache = doc.exists ? (doc.data().permissions || []) : false;
-  } catch(e) { modPermsCache = false; }
+function checkModStatus() {
+  if (!currentUser) { modPermsCache = false; return; }
+  if (isRootMod()) { modPermsCache = ['all']; updateAccountButton(); updateModGameBtn(); return; }
+  const mods = getMods();
+  const entry = mods.find(m => m.name === currentUser.name);
+  modPermsCache = entry ? (entry.permissions || []) : false;
   updateAccountButton();
   updateModGameBtn();
 }
@@ -1826,7 +1685,7 @@ function updateAccountButton() {
   const icon  = document.getElementById('account-btn-icon');
   if (!label) return;
   if (currentUser) {
-    const name = currentUser.displayName || currentUser.email?.split('@')[0] || 'You';
+    const name = currentUser.name || 'You';
     const shortName = name.length > 10 ? name.slice(0,10) + '…' : name;
     const badge = (modPermsCache && modPermsCache.length) ? ' <span class="mod-badge">MOD</span>' : '';
     label.innerHTML = escHtml(shortName) + badge;
@@ -1861,41 +1720,20 @@ function switchModTab(tab) {
 
 // ── Users tab ─────────────────────────────────────────────────────────────────
 
-let modUsersCache = [];
 let modUserSearch = '';
 let modUserOpenId = null;
 
-async function loadModUsers(search) {
-  const content = document.getElementById('mod-content');
+function loadModUsers(search) {
   if (search !== undefined) modUserSearch = search;
-
-  content.innerHTML = `
-    <div class="mod-search">
-      <input id="mod-search-input" type="text" placeholder="Search by name…"
-        value="${escHtml(modUserSearch)}"
-        oninput="loadModUsers(this.value)">
-    </div>
-    <p style="color:rgba(255,255,255,0.4);text-align:center;padding:24px">Loading players…</p>`;
-
-  if (!db) { content.innerHTML += `<p style="color:#ff5252;text-align:center">Firebase not configured.</p>`; return; }
-
-  try {
-    let q = db.collection('users').orderBy('wins','desc').limit(100);
-    const snap = await q.get();
-    modUsersCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch(e) {
-    document.getElementById('mod-content').innerHTML += `<p style="color:#ff5252;text-align:center">Error loading users.</p>`;
-    return;
-  }
   renderModUsers();
 }
 
 function renderModUsers() {
   const content = document.getElementById('mod-content');
+  const banned  = getBanned();
   const filter  = modUserSearch.toLowerCase().trim();
-  const users   = modUsersCache.filter(u =>
-    !filter || (u.displayName || '').toLowerCase().includes(filter)
-  );
+  const all     = getLb().sort((a,b) => (b.wins||0)-(a.wins||0));
+  const users   = all.filter(u => !filter || u.name.toLowerCase().includes(filter));
 
   let html = `
     <div class="mod-search">
@@ -1909,15 +1747,16 @@ function renderModUsers() {
     html += `<p style="text-align:center;color:rgba(255,255,255,0.35);padding:24px">No players found.</p>`;
   } else {
     users.forEach(u => {
-      const isBanned = !!u.banned;
-      const initial  = (u.displayName || '?')[0].toUpperCase();
-      const isOpen   = modUserOpenId === u.id;
+      const isBanned = banned.includes(u.name);
+      const isOpen   = modUserOpenId === u.name;
+      const initial  = u.name[0].toUpperCase();
+      const safeName = escHtml(u.name);
       html += `
-        <div class="mod-user-card${isBanned?' banned':''}" id="muc-${escHtml(u.id)}">
-          <div class="mod-user-header" onclick="toggleModUser('${escHtml(u.id)}')">
+        <div class="mod-user-card${isBanned?' banned':''}">
+          <div class="mod-user-header" onclick="toggleModUser('${safeName}')">
             <div class="mod-user-avatar${isBanned?' banned-av':''}">${escHtml(initial)}</div>
             <div class="mod-user-info">
-              <div class="mod-user-name">${escHtml(u.displayName||'(no name)')}${isBanned?'  <span class="banned-tag">[BANNED]</span>':''}</div>
+              <div class="mod-user-name">${safeName}${isBanned?' <span class="banned-tag">[BANNED]</span>':''}</div>
               <div class="mod-user-meta">W:${u.wins||0}  Pts:${u.totalPoints||0}  G:${u.gamesPlayed||0}</div>
             </div>
             <span class="mod-chevron${isOpen?' open':''}">▶</span>
@@ -1929,16 +1768,13 @@ function renderModUsers() {
               <span>Games: <b>${u.gamesPlayed||0}</b></span>
               <span>Best: <b>${u.bestGameScore||0}</b></span>
             </div>
-            ${hasPerm('ban') ? `
-              ${isBanned
-                ? `<button class="btn-mod-sm btn-safe" onclick="modUnbanPlayer('${escHtml(u.id)}')">✅ Unban</button>`
-                : `<button class="btn-mod-sm btn-danger" onclick="modBanPlayer('${escHtml(u.id)}','${escHtml(u.displayName||'')}')">🚫 Ban</button>`
-              }` : ''}
+            ${hasPerm('ban') ? (isBanned
+              ? `<button class="btn-mod-sm btn-safe"   onclick="modUnbanPlayer('${safeName}')">✅ Unban</button>`
+              : `<button class="btn-mod-sm btn-danger" onclick="modBanPlayer('${safeName}')">🚫 Ban</button>`) : ''}
             ${hasPerm('reset-stats') ? `
-              <button class="btn-mod-sm btn-warn" onclick="modResetStats('${escHtml(u.id)}','${escHtml(u.displayName||'')}')">🔄 Reset Stats</button>` : ''}
-            ${hasPerm('manage-mods') && !isRootUid(u.id) ? `
-              <button class="btn-mod-sm btn-warn" onclick="modPromptAddMod('${escHtml(u.id)}','${escHtml(u.displayName||'')}')">🛡 Make Mod</button>` : ''}
-            <button class="btn-mod-sm" style="background:rgba(255,255,255,0.08)" onclick="copyUidToClipboard('${escHtml(u.id)}')">📋 Copy UID</button>
+              <button class="btn-mod-sm btn-warn" onclick="modResetStats('${safeName}')">🔄 Reset Stats</button>` : ''}
+            ${hasPerm('manage-mods') && u.name !== ROOT_MOD_NAME ? `
+              <button class="btn-mod-sm btn-warn" onclick="modPromptAddMod('${safeName}')">🛡 Make Mod</button>` : ''}
           </div>
         </div>`;
     });
@@ -1946,75 +1782,50 @@ function renderModUsers() {
   content.innerHTML = html;
 }
 
-function isRootUid(uid) { return uid === ROOT_MOD_UID; }
-
-function toggleModUser(uid) {
-  modUserOpenId = modUserOpenId === uid ? null : uid;
+function toggleModUser(name) {
+  modUserOpenId = modUserOpenId === name ? null : name;
   renderModUsers();
 }
 
-async function modBanPlayer(uid, name) {
-  if (!confirm(`Ban "${name}"? They will be hidden from the leaderboard and cannot save new stats.`)) return;
-  try {
-    await db.collection('users').doc(uid).update({ banned: true, bannedBy: currentUser.uid, bannedAt: firebase.firestore.FieldValue.serverTimestamp() });
-    toast(`${name} banned.`, 'error');
-    const u = modUsersCache.find(u => u.id === uid);
-    if (u) u.banned = true;
-    renderModUsers();
-  } catch(e) { toast('Ban failed: ' + e.message, 'error'); }
+function modBanPlayer(name) {
+  if (!confirm(`Ban "${name}"? They will be hidden from the leaderboard and blocked from saving stats.`)) return;
+  const banned = getBanned();
+  if (!banned.includes(name)) { banned.push(name); lsSet(LS_BANNED, banned); }
+  toast(`${name} banned.`, 'error');
+  renderModUsers();
 }
 
-async function modUnbanPlayer(uid) {
-  const u = modUsersCache.find(u => u.id === uid);
-  try {
-    await db.collection('users').doc(uid).update({ banned: false, bannedBy: firebase.firestore.FieldValue.delete(), bannedAt: firebase.firestore.FieldValue.delete() });
-    toast(`${u?.displayName||uid} unbanned.`, 'success');
-    if (u) u.banned = false;
-    renderModUsers();
-  } catch(e) { toast('Unban failed: ' + e.message, 'error'); }
+function modUnbanPlayer(name) {
+  const banned = getBanned().filter(n => n !== name);
+  lsSet(LS_BANNED, banned);
+  toast(`${name} unbanned.`, 'success');
+  renderModUsers();
 }
 
-async function modResetStats(uid, name) {
+function modResetStats(name) {
   if (!confirm(`Reset ALL stats for "${name}"? This cannot be undone.`)) return;
-  try {
-    await db.collection('users').doc(uid).update({ wins:0, gamesPlayed:0, totalPoints:0, bestGameScore:0 });
-    toast(`Stats reset for ${name}.`, 'success');
-    const u = modUsersCache.find(u => u.id === uid);
-    if (u) { u.wins=0; u.gamesPlayed=0; u.totalPoints=0; u.bestGameScore=0; }
-    renderModUsers();
-  } catch(e) { toast('Reset failed: ' + e.message, 'error'); }
-}
-
-function copyUidToClipboard(uid) {
-  navigator.clipboard?.writeText(uid).then(() => toast('UID copied!', 'success')).catch(() => toast(uid, 'info', 6000));
+  saveLbEntry({ name, wins:0, gamesPlayed:0, totalPoints:0, bestGameScore:0 });
+  toast(`Stats reset for ${name}.`, 'success');
+  renderModUsers();
 }
 
 // ── Moderators tab ────────────────────────────────────────────────────────────
 
-let modListCache = [];
-
-async function loadModMods() {
+function loadModMods() {
   if (!hasPerm('manage-mods')) {
     document.getElementById('mod-content').innerHTML =
       `<p style="color:rgba(255,255,255,0.4);text-align:center;padding:32px">You don't have manage-mods permission.</p>`;
     return;
   }
-  document.getElementById('mod-content').innerHTML =
-    `<p style="color:rgba(255,255,255,0.4);text-align:center;padding:32px">Loading…</p>`;
-  try {
-    const snap = await db.collection('moderators').get();
-    modListCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch(e) { modListCache = []; }
   renderModMods();
 }
 
 function renderModMods() {
   const content = document.getElementById('mod-content');
+  const mods    = getMods();
   let html = `<div class="add-mod-form">
     <h3>➕ Add Moderator</h3>
-    <input id="new-mod-uid" type="text" placeholder="User UID (copy from player card above)…"
-      style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;font-size:0.88rem;padding:9px 12px;outline:none;font-family:inherit;width:100%">
-    <input id="new-mod-name" type="text" placeholder="Display name (for reference)…"
+    <input id="new-mod-name" type="text" placeholder="Player's display name…"
       style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;font-size:0.88rem;padding:9px 12px;outline:none;font-family:inherit;width:100%">
     <div class="perm-checkboxes" id="new-mod-perms">
       ${ALL_PERMS.map(p => `
@@ -2024,63 +1835,51 @@ function renderModMods() {
     </div>
     <button class="btn btn-primary" onclick="modAddMod()">Add Moderator</button>
   </div>
-  <p style="font-size:0.78rem;color:rgba(255,255,255,0.35);margin-top:4px">${modListCache.length} moderator${modListCache.length!==1?'s':''}</p>`;
+  <p style="font-size:0.78rem;color:rgba(255,255,255,0.35);margin-top:4px">${mods.length} moderator${mods.length!==1?'s':''}</p>`;
 
-  modListCache.forEach(m => {
+  mods.forEach(m => {
     const perms = m.permissions || [];
     html += `
       <div class="mod-row">
         <div class="mod-row-info">
-          <div class="mod-row-name">${escHtml(m.displayName || m.id)}</div>
+          <div class="mod-row-name">${escHtml(m.name)}</div>
           <div class="mod-row-perms">
             ${perms.map(p => `<span class="perm-chip">${escHtml(p)}</span>`).join('')}
             ${!perms.length ? '<span style="opacity:0.4">no permissions</span>' : ''}
           </div>
         </div>
-        <button class="btn-mod-sm btn-danger" onclick="modRemoveMod('${escHtml(m.id)}','${escHtml(m.displayName||m.id)}')">Remove</button>
+        <button class="btn-mod-sm btn-danger" onclick="modRemoveMod('${escHtml(m.name)}')">Remove</button>
       </div>`;
   });
 
   content.innerHTML = html;
 }
 
-async function modAddMod() {
-  const uid  = document.getElementById('new-mod-uid')?.value.trim();
-  const name = document.getElementById('new-mod-name')?.value.trim();
+function modAddMod() {
+  const name  = document.getElementById('new-mod-name')?.value.trim();
   const perms = [...document.querySelectorAll('#new-mod-perms input:checked')].map(c => c.value);
-  if (!uid) { toast('Enter a UID.', 'error'); return; }
+  if (!name)  { toast('Enter a display name.', 'error'); return; }
   if (!perms.length) { toast('Select at least one permission.', 'error'); return; }
-  try {
-    await db.collection('moderators').doc(uid).set({
-      displayName: name || uid,
-      permissions: perms,
-      grantedBy: currentUser.uid,
-      grantedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    toast(`${name||uid} is now a moderator.`, 'success');
-    modListCache.push({ id: uid, displayName: name||uid, permissions: perms });
-    renderModMods();
-  } catch(e) { toast('Failed: ' + e.message, 'error'); }
+  const mods = getMods().filter(m => m.name !== name);
+  mods.push({ name, permissions: perms });
+  lsSet(LS_MODS, mods);
+  toast(`${name} is now a moderator.`, 'success');
+  renderModMods();
 }
 
-function modPromptAddMod(uid, name) {
+function modPromptAddMod(name) {
   switchModTab('mods');
   setTimeout(() => {
-    const uidEl = document.getElementById('new-mod-uid');
-    const nameEl = document.getElementById('new-mod-name');
-    if (uidEl) uidEl.value = uid;
-    if (nameEl) nameEl.value = name;
+    const el = document.getElementById('new-mod-name');
+    if (el) el.value = name;
   }, 100);
 }
 
-async function modRemoveMod(uid, name) {
+function modRemoveMod(name) {
   if (!confirm(`Remove moderator "${name}"?`)) return;
-  try {
-    await db.collection('moderators').doc(uid).delete();
-    toast(`${name} removed from mods.`, 'success');
-    modListCache = modListCache.filter(m => m.id !== uid);
-    renderModMods();
-  } catch(e) { toast('Failed: ' + e.message, 'error'); }
+  lsSet(LS_MODS, getMods().filter(m => m.name !== name));
+  toast(`${name} removed from mods.`, 'success');
+  renderModMods();
 }
 
 // ── In-game mod controls ───────────────────────────────────────────────────────
@@ -3705,7 +3504,7 @@ function onGameState(state) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 window.addEventListener('load', () => {
-  initFirebase();
+  initLocalAuth();
   const params = new URLSearchParams(window.location.search);
   const joinCode = params.get('join');
   if (joinCode) {
