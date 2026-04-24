@@ -906,6 +906,301 @@ body {
 }
 .stat-box-val { font-size: 1.4rem; font-weight: bold; color: var(--gold-bright); }
 .stat-box-label { font-size: 0.72rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.uid-box {
+  background: rgba(0,0,0,0.35);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+  word-break: break-all;
+  cursor: pointer;
+  text-align: center;
+}
+.uid-box:hover { color: rgba(255,255,255,0.7); }
+
+/* ── Mod badge (account button) ─────────────────────────────────────────────── */
+.mod-badge {
+  background: #b71c1c;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+/* ── Mod panel screen ─────────────────────────────────────────────────────── */
+#screen-mod {
+  flex-direction: column;
+  align-items: stretch;
+  background: #0d1a0d;
+  overflow: hidden;
+}
+.mod-layout {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+.mod-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(180,0,0,0.25);
+  border-bottom: 2px solid #b71c1c;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.mod-topbar h2 { color: #ff5252; font-size: 1.1rem; margin: 0; }
+.mod-tabs {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.mod-tab {
+  padding: 5px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.mod-tab.active { background: #b71c1c; color: #fff; border-color: #b71c1c; }
+.mod-content {
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Mod search / filter bar */
+.mod-search {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.mod-search input {
+  flex: 1;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.9rem;
+  padding: 9px 12px;
+  outline: none;
+  font-family: inherit;
+}
+.mod-search input:focus { border-color: #ff5252; }
+.mod-search input::placeholder { color: rgba(255,255,255,0.3); }
+
+/* Mod user card */
+.mod-user-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.mod-user-card.banned { border-color: rgba(244,67,54,0.4); background: rgba(244,67,54,0.06); }
+.mod-user-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+.mod-user-header:hover { background: rgba(255,255,255,0.04); }
+.mod-user-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: #2d5a27;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: bold; color: var(--gold-bright);
+  flex-shrink: 0;
+}
+.mod-user-avatar.banned-av { background: #5a1a1a; color: #ff5252; }
+.mod-user-info { flex: 1; min-width: 0; }
+.mod-user-name { font-weight: bold; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mod-user-meta { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-top: 1px; }
+.banned-tag { color: #ff5252; font-weight: bold; }
+.mod-chevron { color: rgba(255,255,255,0.3); font-size: 0.8rem; transition: transform 0.2s; }
+.mod-chevron.open { transform: rotate(90deg); }
+.mod-user-actions {
+  display: none;
+  padding: 0 14px 14px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mod-user-actions.open { display: flex; }
+.mod-user-stat-row {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.btn-danger { background: #c62828; color: #fff; border: none; }
+.btn-danger:hover { background: #e53935; }
+.btn-warn { background: #e65100; color: #fff; border: none; }
+.btn-warn:hover { background: #f4511e; }
+.btn-safe { background: #2e7d32; color: #fff; border: none; }
+.btn-safe:hover { background: #388e3c; }
+.btn-mod-sm {
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: inherit;
+  font-weight: bold;
+  border: none;
+  transition: background 0.15s;
+}
+
+/* Mod - mods list */
+.mod-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.mod-row-info { flex: 1; min-width: 0; }
+.mod-row-name { font-size: 0.9rem; font-weight: bold; }
+.mod-row-perms { font-size: 0.72rem; color: rgba(255,255,255,0.45); margin-top: 2px; }
+.perm-chip {
+  display: inline-block;
+  background: rgba(183,28,28,0.3);
+  border: 1px solid rgba(183,28,28,0.5);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.68rem;
+  margin: 1px 2px;
+  color: #ff8a80;
+}
+
+/* Add-mod form */
+.add-mod-form {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.add-mod-form h3 { font-size: 0.9rem; color: var(--gold-bright); }
+.perm-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.perm-check-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 5px 10px;
+}
+.perm-check-label input { accent-color: #ff5252; }
+
+/* ── In-game moderator overlay ────────────────────────────────────────────── */
+#mod-game-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 12px;
+  z-index: 500;
+  background: #b71c1c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  font-family: inherit;
+  cursor: pointer;
+  display: none;
+  box-shadow: 0 4px 16px rgba(183,28,28,0.5);
+}
+#mod-game-btn:hover { background: #e53935; }
+#mod-game-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+#mod-game-overlay.open { display: flex; }
+.mod-overlay-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #b71c1c;
+  flex-shrink: 0;
+}
+.mod-overlay-bar h3 { color: #fff; font-size: 1rem; flex: 1; }
+.mod-overlay-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.mod-player-block {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 12px;
+}
+.mod-player-block h4 { font-size: 0.88rem; color: var(--gold-bright); margin-bottom: 8px; }
+.mod-hand-cards { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; align-items: center; }
+.mod-card-chip {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 4px;
+  transition: background 0.15s;
+}
+.mod-card-chip:hover { background: rgba(244,67,54,0.35); border-color: #f44336; }
+.mod-card-chip .rm { color: #ff5252; font-size: 0.7rem; }
+.mod-player-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.mod-global-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: rgba(183,28,28,0.15);
+  border: 1px solid rgba(183,28,28,0.3);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+@media (max-width: 640px) {
+  .mod-tabs { margin-left: 0; width: 100%; }
+  .mod-tab { flex: 1; text-align: center; font-size: 0.72rem; padding: 5px 6px; }
+  #mod-game-btn { bottom: 120px; }
+}
 </style>
 </head>
 <body>
@@ -1093,6 +1388,37 @@ body {
   </div>
 </div>
 
+<!-- ═══════════════════════════════════ MOD PANEL ════════════════════════ -->
+<div id="screen-mod" class="screen">
+  <div class="mod-layout">
+    <div class="mod-topbar">
+      <h2>⚑ Mod Panel</h2>
+      <div class="mod-tabs">
+        <button class="mod-tab active" id="mod-tab-users"  onclick="switchModTab('users')">Players</button>
+        <button class="mod-tab"        id="mod-tab-mods"   onclick="switchModTab('mods')">Moderators</button>
+      </div>
+      <button class="btn btn-ghost" style="margin-left:auto" onclick="showScreen('screen-landing')">← Back</button>
+    </div>
+    <div class="mod-content" id="mod-content">
+      <p style="color:rgba(255,255,255,0.4);text-align:center">Loading…</p>
+    </div>
+  </div>
+</div>
+
+<!-- In-game mod button (floating) -->
+<button id="mod-game-btn" onclick="openModGameOverlay()">⚑ MOD</button>
+
+<!-- In-game mod overlay -->
+<div id="mod-game-overlay">
+  <div class="mod-overlay-bar">
+    <h3>⚑ Moderator Controls</h3>
+    <button class="btn btn-ghost" style="padding:5px 12px;font-size:0.8rem" onclick="closeModGameOverlay()">✕ Close</button>
+  </div>
+  <div class="mod-overlay-body" id="mod-overlay-body">
+    <p style="color:rgba(255,255,255,0.4);text-align:center">Loading…</p>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════ LEADERBOARD ═══════════════════════ -->
 <div id="screen-leaderboard" class="screen">
   <div class="lb-header">
@@ -1155,10 +1481,22 @@ body {
 //      match /databases/{database}/documents {
 //        match /users/{uid} {
 //          allow read: if true;
-//          allow write: if request.auth != null && request.auth.uid == uid;
+//          allow write: if request.auth != null && (
+//            request.auth.uid == uid ||
+//            exists(/databases/$(database)/documents/moderators/$(request.auth.uid)) ||
+//            request.auth.uid == 'YOUR_UID_HERE'
+//          );
+//        }
+//        match /moderators/{uid} {
+//          allow read: if request.auth != null;
+//          allow write: if request.auth != null && (
+//            request.auth.uid == 'YOUR_UID_HERE' ||
+//            get(/databases/$(database)/documents/moderators/$(request.auth.uid)).data.permissions.hasAny(['manage-mods','all'])
+//          );
 //        }
 //      }
 //    }
+// Replace 'YOUR_UID_HERE' in the rules AND in ROOT_MOD_UID below with your actual UID.
 // ═══════════════════════════════════════════════════════════════════════════════
 const FIREBASE_CONFIG = {
   apiKey:            "YOUR_API_KEY",
@@ -1182,7 +1520,9 @@ function initFirebase() {
     fbAuth = firebase.auth();
     fbAuth.onAuthStateChanged(user => {
       currentUser = user;
-      updateAccountButton();
+      modPermsCache = null;
+      if (user) checkModStatus();
+      else { modPermsCache = false; updateAccountButton(); updateModGameBtn(); }
     });
   } catch(e) { console.warn('Firebase init:', e.message); }
 }
@@ -1246,10 +1586,11 @@ function renderProfile() {
   if (!currentUser) return;
   const name = currentUser.displayName || currentUser.email?.split('@')[0] || 'Player';
   const initial = name[0].toUpperCase();
+  const isMod = modPermsCache && modPermsCache.length > 0;
   getAccountCard().innerHTML = `
     <div class="profile-section">
       <div class="profile-avatar">${initial}</div>
-      <div class="profile-name">${name}</div>
+      <div class="profile-name">${escHtml(name)}${isMod ? ' <span class="mod-badge">MOD</span>' : ''}</div>
     </div>
     <div class="profile-stats" id="profile-stats">
       <div class="stat-box"><div class="stat-box-val">—</div><div class="stat-box-label">Wins</div></div>
@@ -1257,6 +1598,10 @@ function renderProfile() {
       <div class="stat-box"><div class="stat-box-val">—</div><div class="stat-box-label">Points</div></div>
       <div class="stat-box"><div class="stat-box-val">—</div><div class="stat-box-label">Best Game</div></div>
     </div>
+    <div class="uid-box" onclick="copyUidToClipboard('${currentUser.uid}')" title="Click to copy your UID">
+      UID: ${currentUser.uid}<br><span style="font-size:0.65rem;opacity:0.6">Click to copy — needed for ROOT_MOD_UID</span>
+    </div>
+    ${isMod ? `<button class="btn btn-primary" style="background:#b71c1c;border-color:#b71c1c" onclick="showModPanel()">⚑ Open Mod Panel</button>` : ''}
     <button class="btn btn-ghost" onclick="doSignOut()">Sign Out</button>`;
   loadProfileStats();
 }
@@ -1344,6 +1689,11 @@ function friendlyAuthError(code) {
 
 async function saveGameStats(won, pointsEarned) {
   if (!currentUser || !db) return;
+  // Don't save stats for banned players
+  try {
+    const doc = await db.collection('users').doc(currentUser.uid).get();
+    if (doc.exists && doc.data().banned) return;
+  } catch(e) {}
   try {
     const ref = db.collection('users').doc(currentUser.uid);
     await db.runTransaction(async tx => {
@@ -1398,15 +1748,16 @@ async function loadLeaderboard() {
   try {
     const snap = await db.collection('users')
       .orderBy(lbSortField, 'desc')
-      .limit(20)
+      .limit(50)
       .get();
-    if (snap.empty) {
+    const rankEmoji = ['🥇','🥈','🥉'];
+    let html = '';
+    const visibleDocs = snap.docs.filter(d => !d.data().banned).slice(0, 20);
+    if (!visibleDocs.length) {
       tbody.innerHTML = `<tr><td colspan="5" class="lb-empty">No players yet — be the first!</td></tr>`;
       return;
     }
-    const rankEmoji = ['🥇','🥈','🥉'];
-    let html = '';
-    snap.docs.forEach((doc, i) => {
+    visibleDocs.forEach((doc, i) => {
       const d = doc.data();
       const isMe = currentUser && doc.id === currentUser.uid;
       const rankClass = i < 3 ? ` class="lb-rank-${i+1}"` : '';
@@ -1427,6 +1778,455 @@ async function loadLeaderboard() {
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODERATOR SYSTEM
+// After signing up, go to your Profile page, copy your UID, and paste it below.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const ROOT_MOD_UID = 'YOUR_UID_HERE'; // ← paste your UID here after signing up
+
+let modPermsCache = null; // null = unchecked, false = not mod, string[] = permissions
+
+const ALL_PERMS = ['ban', 'reset-stats', 'game-control', 'manage-mods'];
+const PERM_LABELS = {
+  'ban':         'Ban / Unban players',
+  'reset-stats': 'Reset player stats',
+  'game-control':'In-game controls',
+  'manage-mods': 'Add / remove mods',
+};
+
+function isRootMod() {
+  return currentUser && currentUser.uid === ROOT_MOD_UID;
+}
+
+function hasPerm(perm) {
+  if (!currentUser) return false;
+  if (isRootMod()) return true;
+  if (!Array.isArray(modPermsCache)) return false;
+  return modPermsCache.includes('all') || modPermsCache.includes(perm);
+}
+
+async function checkModStatus() {
+  if (!currentUser || !db) { modPermsCache = false; return; }
+  if (isRootMod()) { modPermsCache = ['all']; updateAccountButton(); return; }
+  try {
+    const doc = await db.collection('moderators').doc(currentUser.uid).get();
+    modPermsCache = doc.exists ? (doc.data().permissions || []) : false;
+  } catch(e) { modPermsCache = false; }
+  updateAccountButton();
+  updateModGameBtn();
+}
+
+// ── Account button update (also shows mod badge) ──────────────────────────────
+
+function updateAccountButton() {
+  const label = document.getElementById('account-btn-label');
+  const icon  = document.getElementById('account-btn-icon');
+  if (!label) return;
+  if (currentUser) {
+    const name = currentUser.displayName || currentUser.email?.split('@')[0] || 'You';
+    const shortName = name.length > 10 ? name.slice(0,10) + '…' : name;
+    const badge = (modPermsCache && modPermsCache.length) ? ' <span class="mod-badge">MOD</span>' : '';
+    label.innerHTML = escHtml(shortName) + badge;
+    icon.textContent = '✅';
+  } else {
+    label.textContent = 'Sign In';
+    icon.textContent = '👤';
+  }
+}
+
+// ── Mod panel navigation ──────────────────────────────────────────────────────
+
+let modCurrentTab = 'users';
+
+function showModPanel() {
+  if (!currentUser) { toast('Sign in to access the mod panel.', 'error'); return; }
+  if (!hasPerm('ban') && !hasPerm('manage-mods') && !hasPerm('game-control') && !hasPerm('reset-stats')) {
+    toast('You are not a moderator.', 'error'); return;
+  }
+  showScreen('screen-mod');
+  switchModTab('users');
+}
+
+function switchModTab(tab) {
+  modCurrentTab = tab;
+  document.querySelectorAll('.mod-tab').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById('mod-tab-' + tab);
+  if (el) el.classList.add('active');
+  if (tab === 'users') loadModUsers();
+  else if (tab === 'mods') loadModMods();
+}
+
+// ── Users tab ─────────────────────────────────────────────────────────────────
+
+let modUsersCache = [];
+let modUserSearch = '';
+let modUserOpenId = null;
+
+async function loadModUsers(search) {
+  const content = document.getElementById('mod-content');
+  if (search !== undefined) modUserSearch = search;
+
+  content.innerHTML = `
+    <div class="mod-search">
+      <input id="mod-search-input" type="text" placeholder="Search by name…"
+        value="${escHtml(modUserSearch)}"
+        oninput="loadModUsers(this.value)">
+    </div>
+    <p style="color:rgba(255,255,255,0.4);text-align:center;padding:24px">Loading players…</p>`;
+
+  if (!db) { content.innerHTML += `<p style="color:#ff5252;text-align:center">Firebase not configured.</p>`; return; }
+
+  try {
+    let q = db.collection('users').orderBy('wins','desc').limit(100);
+    const snap = await q.get();
+    modUsersCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) {
+    document.getElementById('mod-content').innerHTML += `<p style="color:#ff5252;text-align:center">Error loading users.</p>`;
+    return;
+  }
+  renderModUsers();
+}
+
+function renderModUsers() {
+  const content = document.getElementById('mod-content');
+  const filter  = modUserSearch.toLowerCase().trim();
+  const users   = modUsersCache.filter(u =>
+    !filter || (u.displayName || '').toLowerCase().includes(filter)
+  );
+
+  let html = `
+    <div class="mod-search">
+      <input id="mod-search-input" type="text" placeholder="Search by name…"
+        value="${escHtml(modUserSearch)}"
+        oninput="modUserSearch=this.value;renderModUsers()">
+    </div>
+    <p style="font-size:0.78rem;color:rgba(255,255,255,0.35)">${users.length} player${users.length!==1?'s':''} shown</p>`;
+
+  if (!users.length) {
+    html += `<p style="text-align:center;color:rgba(255,255,255,0.35);padding:24px">No players found.</p>`;
+  } else {
+    users.forEach(u => {
+      const isBanned = !!u.banned;
+      const initial  = (u.displayName || '?')[0].toUpperCase();
+      const isOpen   = modUserOpenId === u.id;
+      html += `
+        <div class="mod-user-card${isBanned?' banned':''}" id="muc-${escHtml(u.id)}">
+          <div class="mod-user-header" onclick="toggleModUser('${escHtml(u.id)}')">
+            <div class="mod-user-avatar${isBanned?' banned-av':''}">${escHtml(initial)}</div>
+            <div class="mod-user-info">
+              <div class="mod-user-name">${escHtml(u.displayName||'(no name)')}${isBanned?'  <span class="banned-tag">[BANNED]</span>':''}</div>
+              <div class="mod-user-meta">W:${u.wins||0}  Pts:${u.totalPoints||0}  G:${u.gamesPlayed||0}</div>
+            </div>
+            <span class="mod-chevron${isOpen?' open':''}">▶</span>
+          </div>
+          <div class="mod-user-actions${isOpen?' open':''}">
+            <div class="mod-user-stat-row">
+              <span>Wins: <b>${u.wins||0}</b></span>
+              <span>Points: <b>${u.totalPoints||0}</b></span>
+              <span>Games: <b>${u.gamesPlayed||0}</b></span>
+              <span>Best: <b>${u.bestGameScore||0}</b></span>
+            </div>
+            ${hasPerm('ban') ? `
+              ${isBanned
+                ? `<button class="btn-mod-sm btn-safe" onclick="modUnbanPlayer('${escHtml(u.id)}')">✅ Unban</button>`
+                : `<button class="btn-mod-sm btn-danger" onclick="modBanPlayer('${escHtml(u.id)}','${escHtml(u.displayName||'')}')">🚫 Ban</button>`
+              }` : ''}
+            ${hasPerm('reset-stats') ? `
+              <button class="btn-mod-sm btn-warn" onclick="modResetStats('${escHtml(u.id)}','${escHtml(u.displayName||'')}')">🔄 Reset Stats</button>` : ''}
+            ${hasPerm('manage-mods') && !isRootUid(u.id) ? `
+              <button class="btn-mod-sm btn-warn" onclick="modPromptAddMod('${escHtml(u.id)}','${escHtml(u.displayName||'')}')">🛡 Make Mod</button>` : ''}
+            <button class="btn-mod-sm" style="background:rgba(255,255,255,0.08)" onclick="copyUidToClipboard('${escHtml(u.id)}')">📋 Copy UID</button>
+          </div>
+        </div>`;
+    });
+  }
+  content.innerHTML = html;
+}
+
+function isRootUid(uid) { return uid === ROOT_MOD_UID; }
+
+function toggleModUser(uid) {
+  modUserOpenId = modUserOpenId === uid ? null : uid;
+  renderModUsers();
+}
+
+async function modBanPlayer(uid, name) {
+  if (!confirm(`Ban "${name}"? They will be hidden from the leaderboard and cannot save new stats.`)) return;
+  try {
+    await db.collection('users').doc(uid).update({ banned: true, bannedBy: currentUser.uid, bannedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    toast(`${name} banned.`, 'error');
+    const u = modUsersCache.find(u => u.id === uid);
+    if (u) u.banned = true;
+    renderModUsers();
+  } catch(e) { toast('Ban failed: ' + e.message, 'error'); }
+}
+
+async function modUnbanPlayer(uid) {
+  const u = modUsersCache.find(u => u.id === uid);
+  try {
+    await db.collection('users').doc(uid).update({ banned: false, bannedBy: firebase.firestore.FieldValue.delete(), bannedAt: firebase.firestore.FieldValue.delete() });
+    toast(`${u?.displayName||uid} unbanned.`, 'success');
+    if (u) u.banned = false;
+    renderModUsers();
+  } catch(e) { toast('Unban failed: ' + e.message, 'error'); }
+}
+
+async function modResetStats(uid, name) {
+  if (!confirm(`Reset ALL stats for "${name}"? This cannot be undone.`)) return;
+  try {
+    await db.collection('users').doc(uid).update({ wins:0, gamesPlayed:0, totalPoints:0, bestGameScore:0 });
+    toast(`Stats reset for ${name}.`, 'success');
+    const u = modUsersCache.find(u => u.id === uid);
+    if (u) { u.wins=0; u.gamesPlayed=0; u.totalPoints=0; u.bestGameScore=0; }
+    renderModUsers();
+  } catch(e) { toast('Reset failed: ' + e.message, 'error'); }
+}
+
+function copyUidToClipboard(uid) {
+  navigator.clipboard?.writeText(uid).then(() => toast('UID copied!', 'success')).catch(() => toast(uid, 'info', 6000));
+}
+
+// ── Moderators tab ────────────────────────────────────────────────────────────
+
+let modListCache = [];
+
+async function loadModMods() {
+  if (!hasPerm('manage-mods')) {
+    document.getElementById('mod-content').innerHTML =
+      `<p style="color:rgba(255,255,255,0.4);text-align:center;padding:32px">You don't have manage-mods permission.</p>`;
+    return;
+  }
+  document.getElementById('mod-content').innerHTML =
+    `<p style="color:rgba(255,255,255,0.4);text-align:center;padding:32px">Loading…</p>`;
+  try {
+    const snap = await db.collection('moderators').get();
+    modListCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { modListCache = []; }
+  renderModMods();
+}
+
+function renderModMods() {
+  const content = document.getElementById('mod-content');
+  let html = `<div class="add-mod-form">
+    <h3>➕ Add Moderator</h3>
+    <input id="new-mod-uid" type="text" placeholder="User UID (copy from player card above)…"
+      style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;font-size:0.88rem;padding:9px 12px;outline:none;font-family:inherit;width:100%">
+    <input id="new-mod-name" type="text" placeholder="Display name (for reference)…"
+      style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;font-size:0.88rem;padding:9px 12px;outline:none;font-family:inherit;width:100%">
+    <div class="perm-checkboxes" id="new-mod-perms">
+      ${ALL_PERMS.map(p => `
+        <label class="perm-check-label">
+          <input type="checkbox" name="perm" value="${p}"> ${PERM_LABELS[p]}
+        </label>`).join('')}
+    </div>
+    <button class="btn btn-primary" onclick="modAddMod()">Add Moderator</button>
+  </div>
+  <p style="font-size:0.78rem;color:rgba(255,255,255,0.35);margin-top:4px">${modListCache.length} moderator${modListCache.length!==1?'s':''}</p>`;
+
+  modListCache.forEach(m => {
+    const perms = m.permissions || [];
+    html += `
+      <div class="mod-row">
+        <div class="mod-row-info">
+          <div class="mod-row-name">${escHtml(m.displayName || m.id)}</div>
+          <div class="mod-row-perms">
+            ${perms.map(p => `<span class="perm-chip">${escHtml(p)}</span>`).join('')}
+            ${!perms.length ? '<span style="opacity:0.4">no permissions</span>' : ''}
+          </div>
+        </div>
+        <button class="btn-mod-sm btn-danger" onclick="modRemoveMod('${escHtml(m.id)}','${escHtml(m.displayName||m.id)}')">Remove</button>
+      </div>`;
+  });
+
+  content.innerHTML = html;
+}
+
+async function modAddMod() {
+  const uid  = document.getElementById('new-mod-uid')?.value.trim();
+  const name = document.getElementById('new-mod-name')?.value.trim();
+  const perms = [...document.querySelectorAll('#new-mod-perms input:checked')].map(c => c.value);
+  if (!uid) { toast('Enter a UID.', 'error'); return; }
+  if (!perms.length) { toast('Select at least one permission.', 'error'); return; }
+  try {
+    await db.collection('moderators').doc(uid).set({
+      displayName: name || uid,
+      permissions: perms,
+      grantedBy: currentUser.uid,
+      grantedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast(`${name||uid} is now a moderator.`, 'success');
+    modListCache.push({ id: uid, displayName: name||uid, permissions: perms });
+    renderModMods();
+  } catch(e) { toast('Failed: ' + e.message, 'error'); }
+}
+
+function modPromptAddMod(uid, name) {
+  switchModTab('mods');
+  setTimeout(() => {
+    const uidEl = document.getElementById('new-mod-uid');
+    const nameEl = document.getElementById('new-mod-name');
+    if (uidEl) uidEl.value = uid;
+    if (nameEl) nameEl.value = name;
+  }, 100);
+}
+
+async function modRemoveMod(uid, name) {
+  if (!confirm(`Remove moderator "${name}"?`)) return;
+  try {
+    await db.collection('moderators').doc(uid).delete();
+    toast(`${name} removed from mods.`, 'success');
+    modListCache = modListCache.filter(m => m.id !== uid);
+    renderModMods();
+  } catch(e) { toast('Failed: ' + e.message, 'error'); }
+}
+
+// ── In-game mod controls ───────────────────────────────────────────────────────
+
+function updateModGameBtn() {
+  const btn = document.getElementById('mod-game-btn');
+  if (!btn) return;
+  const show = hasPerm('game-control') && document.getElementById('screen-game')?.classList.contains('active');
+  btn.style.display = show ? 'block' : 'none';
+}
+
+function openModGameOverlay() {
+  const overlay = document.getElementById('mod-game-overlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  renderModGameOverlay();
+}
+
+function closeModGameOverlay() {
+  document.getElementById('mod-game-overlay')?.classList.remove('open');
+}
+
+function renderModGameOverlay() {
+  const body = document.getElementById('mod-overlay-body');
+  if (!body) return;
+
+  if (!isHost || !room) {
+    body.innerHTML = `<p style="color:rgba(255,255,255,0.4);text-align:center;padding:32px">
+      In-game controls are only available when you are the <b>host</b> of the room.</p>`;
+    return;
+  }
+
+  const players = room.players.filter(p => !p.isAI || room.players.length <= 2);
+  let html = `
+    <div class="mod-global-actions">
+      <b style="color:#ff5252;width:100%;font-size:0.82rem">Global Actions</b>
+      <button class="btn-mod-sm btn-warn" onclick="modForceEndRound()">⏭ Force End Round</button>
+      <button class="btn-mod-sm btn-danger" onclick="modRefillCarcass()">♻ Refill Carcass</button>
+      <button class="btn-mod-sm btn-safe" onclick="modReshuffleDeck()">🔀 Reshuffle Deck</button>
+    </div>`;
+
+  room.players.forEach((p, pi) => {
+    const hand = p.hand || [];
+    const handHtml = hand.map(c =>
+      `<span class="mod-card-chip" onclick="modRemoveCard('${escHtml(p.id)}','${escHtml(c.id)}')">
+        <span style="color:${(c.suit==='♥'||c.suit==='♦')?'#f44336':'#fff'}">${escHtml(c.rank)}${escHtml(c.suit)}</span>
+        <span class="rm">✕</span>
+       </span>`
+    ).join('');
+
+    html += `
+      <div class="mod-player-block">
+        <h4>${escHtml(p.name)}${p.isAI?' 🤖':''}${p.id===myId?' (you)':''} — Hand (${hand.length})</h4>
+        <div class="mod-hand-cards">
+          ${handHtml || '<span style="opacity:0.4;font-size:0.8rem">Empty hand</span>'}
+        </div>
+        <div class="mod-player-btns">
+          <button class="btn-mod-sm btn-safe" onclick="modDealCard('${escHtml(p.id)}')">+ Deal Card</button>
+          <button class="btn-mod-sm btn-warn" onclick="modClearHand('${escHtml(p.id)}','${escHtml(p.name)}')">🗑 Clear Hand</button>
+          ${!p.isAI && p.id !== myId ? `<button class="btn-mod-sm btn-danger" onclick="modKickPlayer('${escHtml(p.id)}','${escHtml(p.name)}')">🚫 Kick</button>` : ''}
+        </div>
+      </div>`;
+  });
+
+  body.innerHTML = html;
+}
+
+function modForceEndRound() {
+  if (!isHost || !room) return;
+  room.endRound();
+  broadcastState();
+  toast('Round force-ended.', 'success');
+  renderModGameOverlay();
+}
+
+function modRefillCarcass() {
+  if (!isHost || !room) return;
+  // Draw up to 3 cards from deck to fill carcass back to 3
+  while (room.carcass.length < 3 && room.deck.length > 0) {
+    room.carcass.push(room.deck.pop());
+  }
+  broadcastState();
+  toast('Carcass refilled.', 'success');
+  renderModGameOverlay();
+}
+
+function modReshuffleDeck() {
+  if (!isHost || !room) return;
+  // Collect carcass + dealt cards back in
+  const discards = [...room.carcass];
+  room.carcass = [];
+  room.deck.push(...discards);
+  for (let i = room.deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [room.deck[i], room.deck[j]] = [room.deck[j], room.deck[i]];
+  }
+  // Refill carcass
+  while (room.carcass.length < 3 && room.deck.length > 0) room.carcass.push(room.deck.pop());
+  broadcastState();
+  toast('Deck reshuffled.', 'success');
+  renderModGameOverlay();
+}
+
+function modDealCard(playerId) {
+  if (!isHost || !room || !room.deck.length) { toast('Deck is empty.', 'error'); return; }
+  const p = room.players.find(p => p.id === playerId);
+  if (!p) return;
+  p.hand.push(room.deck.pop());
+  broadcastState();
+  renderModGameOverlay();
+}
+
+function modRemoveCard(playerId, cardId) {
+  if (!isHost || !room) return;
+  const p = room.players.find(p => p.id === playerId);
+  if (!p) return;
+  const idx = p.hand.findIndex(c => c.id === cardId);
+  if (idx === -1) return;
+  const [card] = p.hand.splice(idx, 1);
+  room.deck.unshift(card); // Put back at bottom of deck
+  broadcastState();
+  renderModGameOverlay();
+}
+
+function modClearHand(playerId, name) {
+  if (!confirm(`Clear ${name}'s hand?`)) return;
+  if (!isHost || !room) return;
+  const p = room.players.find(p => p.id === playerId);
+  if (!p) return;
+  room.deck.unshift(...p.hand);
+  p.hand = [];
+  broadcastState();
+  renderModGameOverlay();
+}
+
+function modKickPlayer(peerId, name) {
+  if (!confirm(`Kick ${name} from the room?`)) return;
+  const conn = guestConns.get(peerId);
+  if (conn) { try { conn.close(); } catch(e) {} }
+  if (room) {
+    room.players = room.players.filter(p => p.id !== peerId);
+    guestConns.delete(peerId);
+    broadcastState();
+  }
+  toast(`${name} kicked.`, 'success');
+  renderModGameOverlay();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1928,6 +2728,8 @@ function $(id) { return document.getElementById(id); }
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   $(id).classList.add('active');
+  closeModGameOverlay();
+  updateModGameBtn();
 }
 
 function toast(msg, type = 'info', duration = 3500) {
