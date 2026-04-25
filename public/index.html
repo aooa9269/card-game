@@ -162,6 +162,16 @@
               <button class="btn btn-ghost" onclick="cancelSwapMode()">Cancel</button>
             </div>
           </div>
+          <!-- Carcass draw mode (deck empty) -->
+          <div id="panel-carcass-draw" class="hidden">
+            <div class="swap-instructions">
+              <strong>Deck empty!</strong> Click a Carcass card above to draw it into your hand. Draw up to 5 total.
+            </div>
+            <div class="sel-info" id="cdraw-info">Click a Carcass card above to take it</div>
+            <div class="action-btns">
+              <button class="btn btn-blue" onclick="finishCarcassDraw()">Done Drawing</button>
+            </div>
+          </div>
         </div>
       </div>
 

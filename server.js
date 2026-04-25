@@ -150,18 +150,23 @@ class Room {
     this.carcass = [];
     this.currentPlayerIndex = 0;
     this.phase = 'lobby'; // lobby | first_pick | playing | round_end | game_end
-    this.hasActed = false;
     this.roundNumber = 1;
     this.log = [];
 
-    // Deck-empty lap tracking
-    this.deckEmptyLap = false;
-    this.deckEmptyLapCount = 0;
+    // Per-turn state
+    this.swapsDoneThisTurn = 0;
+    this.claimsDoneThisTurn = 0;
+    this.hasReplaced = false;
+
+    // Deck / stalemate tracking
+    this.deckGone = false;
+    this.waitingForCarcassDraw = false;
+    this.staleCounter = 0;
 
     // First-pick state
-    this.pickPool = [];          // face-down cards, one per player
+    this.pickPool = [];          // face-down cards (carcass cards + extras)
     this.playerPicks = {};       // playerId → { index, card }
-    this.pickReveal = null;      // set after all pick: { type:'winner'|'redeal', ... }
+    this.pickReveal = null;      // set after all picked: { type:'winner'|'redeal', ... }
 
     // Round result tracking
     this.lastRoundTotalTie = false;
@@ -178,33 +183,49 @@ class Room {
     this.deck = shuffle(createDeck());
     for (const p of this.players) { p.hand = []; p.sets = []; }
 
-    // Deal one face-down pick card per player
-    this.pickPool = [];
-    for (let i = 0; i < this.players.length; i++) {
-      this.pickPool.push(this.deck.pop());
+    // Deal 3 carcass cards first — these become the pick pool base
+    this.carcass = [];
+    for (let i = 0; i < 3; i++) {
+      if (this.deck.length) this.carcass.push(this.deck.pop());
     }
+    // Pick pool = those 3 carcass cards + extras for players beyond 3
+    this.pickPool = [...this.carcass];
+    const extras = Math.max(0, this.players.length - 3);
+    for (let i = 0; i < extras; i++) {
+      if (this.deck.length) this.pickPool.push(this.deck.pop());
+    }
+
     this.playerPicks = {};
     this.pickReveal = null;
     this.phase = 'first_pick';
     this.pushLog('Pick a card to see who goes first!');
   }
 
-  /** Called after first_pick phase resolves: deal carcass + hands, begin playing. */
+  /** Called after first_pick phase resolves: hand out cards, begin playing. */
   setupPlayPhase() {
-    this.carcass = [];
-    for (let i = 0; i < 3; i++) {
-      if (this.deck.length) this.carcass.push(this.deck.pop());
-    }
+    // Carcass is already in place from startGame; return extra pick-pool cards to deck
+    const extraCards = this.pickPool.filter(c => !this.carcass.some(cc => cc.id === c.id));
+    this.deck.push(...extraCards);
+    this.pickPool = [];
+    this.deck = shuffle(this.deck);
+
     for (let i = 0; i < 5; i++) {
       for (const p of this.players) {
         if (this.deck.length) p.hand.push(this.deck.pop());
       }
     }
     this.phase = 'playing';
-    this.hasActed = false;
-    this.deckEmptyLap = false;
-    this.deckEmptyLapCount = 0;
+    this._resetTurnState();
+    this.deckGone = false;
+    this.staleCounter = 0;
     this.pushLog(`Round ${this.roundNumber} — ${this.getCurrentPlayer().name} goes first!`);
+  }
+
+  _resetTurnState() {
+    this.swapsDoneThisTurn = 0;
+    this.claimsDoneThisTurn = 0;
+    this.hasReplaced = false;
+    this.waitingForCarcassDraw = false;
   }
 
   // ── First-pick ─────────────────────────────────────────────────────────────
@@ -317,9 +338,9 @@ class Room {
     }
 
     this.phase = 'playing';
-    this.hasActed = false;
-    this.deckEmptyLap = false;
-    this.deckEmptyLapCount = 0;
+    this._resetTurnState();
+    this.deckGone = false;
+    this.staleCounter = 0;
     this.lastRoundTotalTie = false;
 
     const msg = totalTie
@@ -342,6 +363,7 @@ class Room {
 
     player.hand = player.hand.filter(c => !cardIds.includes(c.id));
     player.sets.push(cards);
+    this.claimsDoneThisTurn++;
     this.pushLog(`${player.name} claimed a 21! (${cards.map(c => c.rank + c.suit).join(', ')})`);
     return { success: true };
   }
@@ -350,7 +372,6 @@ class Room {
     const player = this.players.find(p => p.id === playerId);
     if (!player) return { success: false, error: 'Player not found' };
     if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
-    if (this.hasActed) return { success: false, error: 'Already swapped this turn' };
     if (takeIds.length === 0 || giveIds.length === 0) return { success: false, error: 'Must take and give at least 1 card' };
     if (takeIds.length !== giveIds.length) return { success: false, error: 'Must take and give the same number of cards' };
 
@@ -365,7 +386,7 @@ class Room {
     player.hand.push(...takeCards);
     this.carcass.push(...giveCards);
 
-    this.hasActed = true;
+    this.swapsDoneThisTurn++;
     this.pushLog(`${player.name} swapped ${takeIds.length} card(s) with the Carcass`);
     return { success: true };
   }
@@ -378,24 +399,24 @@ class Room {
     const player = this.players.find(p => p.id === playerId);
     if (!player) return { success: false, error: 'Player not found' };
     if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
-    if (this.hasActed) return { success: false, error: 'Already acted this turn' };
+    if (this.swapsDoneThisTurn > 0 || this.claimsDoneThisTurn > 0) {
+      return { success: false, error: 'Replace Hand must be your first action this turn' };
+    }
     if (this.deck.length === 0) return { success: false, error: 'Deck is empty — cannot replace hand' };
     if (canMakeAny21(player.hand, this.carcass)) {
-      return { success: false, error: 'You can still make 21 with your cards or the Carcass — replace not allowed' };
+      return { success: false, error: 'You can still make 21 — replace not allowed' };
     }
 
     const oldHand = [...player.hand];
-    // Take top cards first
     const newCards = [];
     for (let i = 0; i < 5 && this.deck.length > 0; i++) {
       newCards.push(this.deck.pop());
     }
     player.hand = newCards;
-    // Return old hand to deck and shuffle
     this.deck.push(...oldHand);
     this.deck = shuffle(this.deck);
 
-    this.hasActed = true;
+    this.hasReplaced = true;
     this.pushLog(`${player.name} replaced their hand`);
     return { success: true };
   }
@@ -405,40 +426,70 @@ class Room {
     if (!player) return { success: false, error: 'Player not found' };
     if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
 
-    const prevDeckSize = this.deck.length;
-
-    // Auto-draw to 5
+    // Draw from deck up to 5
     const drew = [];
     while (player.hand.length < 5 && this.deck.length > 0) {
-      const card = this.deck.pop();
-      player.hand.push(card);
-      drew.push(card);
+      drew.push(this.deck.pop());
     }
-    if (drew.length > 0) {
-      this.pushLog(`${player.name} drew ${drew.length} card(s)`);
-    }
+    player.hand.push(...drew);
+    if (drew.length > 0) this.pushLog(`${player.name} drew ${drew.length} card(s)`);
 
-    this.hasActed = false;
-
-    // Detect when deck first empties
-    if (prevDeckSize > 0 && this.deck.length === 0 && !this.deckEmptyLap) {
-      this.deckEmptyLap = true;
-      this.deckEmptyLapCount = 0;
-      this.pushLog('⚠ Deck is empty! Each player gets one more turn.');
+    // Mark deck gone on first empty
+    if (this.deck.length === 0 && !this.deckGone) {
+      this.deckGone = true;
+      this.pushLog('⚠ Deck is empty!');
     }
 
-    // Advance player
+    // If still short and carcass has cards, player picks from carcass
+    if (player.hand.length < 5 && this.carcass.length > 0) {
+      this.waitingForCarcassDraw = true;
+      this.pushLog(`${player.name} picks a card from the Carcass`);
+      return { success: true, roundEnded: false, waitingForCarcassDraw: true };
+    }
+
+    return this._advanceTurn(player);
+  }
+
+  drawFromCarcass(playerId, cardId) {
+    const player = this.players.find(p => p.id === playerId);
+    if (!player) return { success: false, error: 'Player not found' };
+    if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
+    if (!this.waitingForCarcassDraw) return { success: false, error: 'Not in carcass-draw mode' };
+    if (player.hand.length >= 5) return { success: false, error: 'Hand is already full' };
+
+    const cardIdx = this.carcass.findIndex(c => c.id === cardId);
+    if (cardIdx === -1) return { success: false, error: 'Card not found in Carcass' };
+
+    const [card] = this.carcass.splice(cardIdx, 1);
+    player.hand.push(card);
+    this.pushLog(`${player.name} drew ${card.rank}${card.suit} from the Carcass`);
+    return { success: true };
+  }
+
+  finishCarcassDraw(playerId) {
+    const player = this.players.find(p => p.id === playerId);
+    if (!player) return { success: false, error: 'Player not found' };
+    if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
+    if (!this.waitingForCarcassDraw) return { success: false, error: 'Not in carcass-draw mode' };
+    this.waitingForCarcassDraw = false;
+    return this._advanceTurn(player);
+  }
+
+  _advanceTurn(player) {
+    // Stale counter: reset when someone claimed, increment when nobody did
+    if (this.claimsDoneThisTurn > 0) {
+      this.staleCounter = 0;
+    } else {
+      this.staleCounter++;
+    }
+
+    // Stalemate: full cycle with no claims after deck is gone
+    if (this.deckGone && this.staleCounter >= this.players.length) {
+      return this.endRound();
+    }
+
+    this._resetTurnState();
     this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
-
-    // If we're in the empty-deck lap, count turns
-    if (this.deckEmptyLap) {
-      this.deckEmptyLapCount++;
-      if (this.deckEmptyLapCount >= this.players.length) {
-        // Full lap complete — end the round
-        return this.endRound();
-      }
-    }
-
     this.pushLog(`It's ${this.getCurrentPlayer().name}'s turn`);
     return { success: true, roundEnded: false };
   }
@@ -452,49 +503,14 @@ class Room {
     const allSameSets = sorted.every(p => p.sets.length === topSetCount);
 
     if (allSameSets) {
-      // Tiebreaker: compare max hand sums
-      const withSums = this.players
-        .map(p => ({ player: p, sum: handMaxSum(p.hand) }))
-        .sort((a, b) => b.sum - a.sum);
-
-      const topSum = withSums[0].sum;
-      const allSameSum = withSums.every(x => x.sum === topSum);
-
-      if (allSameSum) {
-        // Complete tie — no points, round restarts
-        this.lastRoundTotalTie = true;
-        this.phase = 'round_end';
-        this.pushLog('Total tie — nobody scores! Round restarts.');
-        return { success: true, roundEnded: true, gameEnded: false, roundPoints: {}, totalTie: true, handSums: withSums.map(x => ({ id: x.player.id, name: x.player.name, sum: x.sum })) };
-      }
-
-      // Score by hand sum
-      const roundPoints = {};
-      let pts = n - 1;
-      let prevSum = -1, prevPts = 0;
-      for (const { player, sum } of withSums) {
-        if (sum === prevSum) {
-          roundPoints[player.id] = prevPts;
-        } else {
-          roundPoints[player.id] = Math.max(0, pts);
-          prevPts = roundPoints[player.id];
-        }
-        prevSum = sum;
-        pts--;
-        player.score += roundPoints[player.id];
-      }
-
-      const winThreshold = 2 * n;
-      const gameWinner = [...this.players].sort((a, b) => b.score - a.score).find(p => p.score >= winThreshold);
-      if (gameWinner) {
-        this.phase = 'game_end';
-        return { success: true, roundEnded: true, gameEnded: true, winnerId: gameWinner.id, roundPoints, handSumTiebreaker: true, handSums: withSums.map(x => ({ id: x.player.id, name: x.player.name, sum: x.sum })) };
-      }
+      // Total tie — nobody scores, round restarts
+      this.lastRoundTotalTie = true;
       this.phase = 'round_end';
-      return { success: true, roundEnded: true, gameEnded: false, roundPoints, handSumTiebreaker: true, handSums: withSums.map(x => ({ id: x.player.id, name: x.player.name, sum: x.sum })) };
+      this.pushLog('Tie! Nobody scores. Round restarts.');
+      return { success: true, roundEnded: true, gameEnded: false, roundPoints: {}, totalTie: true };
     }
 
-    // Normal scoring by set count
+    // n-1, n-2… points with tie sharing
     const roundPoints = {};
     let pts = n - 1;
     let prevSets = -1, prevPts = 0;
@@ -532,6 +548,8 @@ class Room {
 
     const myPlayer = this.players.find(p => p.id === forPlayerId);
 
+    const isMyTurnNow = this.phase === 'playing' && this.getCurrentPlayer()?.id === forPlayerId;
+
     const state = {
       code: this.code,
       phase: this.phase,
@@ -539,16 +557,19 @@ class Room {
       carcass: this.phase === 'first_pick' ? [] : this.carcass,
       deckCount: this.deck.length,
       currentPlayerIndex: this.currentPlayerIndex,
-      hasActed: this.hasActed,
-      deckEmptyLap: this.deckEmptyLap,
-      deckEmptyLapCount: this.deckEmptyLapCount,
+      deckGone: this.deckGone,
+      waitingForCarcassDraw: isMyTurnNow && this.waitingForCarcassDraw,
+      swapsDoneThisTurn: this.swapsDoneThisTurn,
+      hasReplaced: this.hasReplaced,
+      totalTie: this.lastRoundTotalTie,
       log: this.log.slice(0, 8),
-      // Can the current player replace their hand?
-      canReplace: this.phase === 'playing' &&
-        this.getCurrentPlayer()?.id === forPlayerId &&
-        !this.hasActed &&
+      canReplace: isMyTurnNow &&
+        !this.hasReplaced &&
+        this.swapsDoneThisTurn === 0 &&
+        this.claimsDoneThisTurn === 0 &&
         this.deck.length > 0 &&
-        myPlayer ? !canMakeAny21(myPlayer.hand, this.carcass) : false,
+        !!myPlayer &&
+        !canMakeAny21(myPlayer.hand, this.carcass),
       players: this.players.map((p, idx) => ({
         id: p.id,
         name: p.name,
@@ -600,8 +621,8 @@ class Room {
       }
     }
 
-    // 2. Try swap if beneficial
-    if (!this.hasActed && this.carcass.length > 0 && ai.hand.length > 0) {
+    // 2. Try swap if beneficial (unlimited swaps allowed)
+    if (this.carcass.length > 0 && ai.hand.length > 0) {
       let bestScore = scoreHand(ai.hand);
       let bestSwap = null;
 
@@ -636,8 +657,8 @@ class Room {
       }
     }
 
-    // 3. Replace hand if stuck and deck available
-    if (!this.hasActed && !canMakeAny21(ai.hand, this.carcass) && this.deck.length > 0) {
+    // 3. Replace hand if stuck, deck available, and no prior actions this turn
+    if (this.swapsDoneThisTurn === 0 && this.claimsDoneThisTurn === 0 && !canMakeAny21(ai.hand, this.carcass) && this.deck.length > 0) {
       this.replaceHand(ai.id);
       // Try claiming after replacement
       let c3 = true;
@@ -840,10 +861,17 @@ io.on('connection', (socket) => {
     } else if (type === 'end-turn') {
       result = room.endTurn(socket.id);
       if (result?.roundEnded) { broadcastState(room); return; }
+      if (result?.waitingForCarcassDraw) { broadcastState(room); return; }
       if (result?.success && room.getCurrentPlayer()?.isAI) {
-        broadcastState(room);
-        scheduleAI(room);
-        return;
+        broadcastState(room); scheduleAI(room); return;
+      }
+    } else if (type === 'draw-from-carcass') {
+      result = room.drawFromCarcass(socket.id, data.cardId);
+    } else if (type === 'finish-carcass-draw') {
+      result = room.finishCarcassDraw(socket.id);
+      if (result?.roundEnded) { broadcastState(room); return; }
+      if (result?.success && room.getCurrentPlayer()?.isAI) {
+        broadcastState(room); scheduleAI(room); return;
       }
     }
 

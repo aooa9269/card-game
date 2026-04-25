@@ -347,13 +347,16 @@ function renderGame(state) {
 function renderCarcass(cards) {
   const el = $('carcass-cards');
   el.innerHTML = '';
+  const cdrawMode = gameState?.waitingForCarcassDraw;
   (cards || []).forEach(card => {
     const cardEl = makeCard(card, {
-      selectable: isMyTurn && swapMode,
+      selectable: isMyTurn && (swapMode || cdrawMode),
       takeSelected: takeIds.has(card.id),
     });
     if (isMyTurn && swapMode) {
       cardEl.addEventListener('click', () => toggleTake(card.id, cardEl));
+    } else if (isMyTurn && cdrawMode) {
+      cardEl.addEventListener('click', () => drawFromCarcass(card.id));
     }
     el.appendChild(cardEl);
   });
@@ -392,10 +395,18 @@ function renderYourSets(sets) {
 }
 
 function renderActionPanel(canReplace) {
+  const cdrawMode = gameState?.waitingForCarcassDraw;
+  $('panel-normal').classList.toggle('hidden', swapMode || cdrawMode);
   $('panel-swap').classList.toggle('hidden', !swapMode);
-  $('panel-normal').classList.toggle('hidden', swapMode);
+  $('panel-carcass-draw').classList.toggle('hidden', !cdrawMode);
 
-  if (!swapMode) {
+  if (cdrawMode) {
+    const me = gameState?.players.find(p => p.id === myId);
+    const handSize = me?.hand?.length ?? 0;
+    $('cdraw-info').textContent = handSize >= 5
+      ? 'Hand full (5 cards). Click Done Drawing.'
+      : `Hand has ${handSize} card${handSize !== 1 ? 's' : ''} — click a Carcass card to draw it`;
+  } else if (!swapMode) {
     const me = gameState?.players.find(p => p.id === myId);
     const handCards = (me?.hand || []).filter(c => c && selectedHandIds.has(c.id));
 
@@ -408,14 +419,14 @@ function renderActionPanel(canReplace) {
     $('sel-info').textContent = infoText;
 
     $('btn-claim').disabled = !isMyTurn || !canMake21(handCards);
-    $('btn-swap-mode').disabled = !isMyTurn || (gameState?.hasActed ?? false);
+    $('btn-swap-mode').disabled = !isMyTurn;
 
     // Replace hand: only when server says it's valid (canReplace flag)
     const replaceBtn = $('btn-replace');
-    replaceBtn.disabled = !isMyTurn || !(canReplace);
+    replaceBtn.disabled = !isMyTurn || !canReplace;
     replaceBtn.style.opacity = replaceBtn.disabled ? '0.35' : '1';
     replaceBtn.title = canReplace
-      ? 'Replace your 5 cards with 5 new ones from the deck (deck is reshuffled)'
+      ? 'Replace your 5 cards with 5 new ones from the deck'
       : 'Only available when you cannot make 21 with any combination of your hand + Carcass';
 
     $('btn-end-turn').disabled = !isMyTurn;
@@ -456,7 +467,7 @@ function claimSet() {
 }
 
 function enterSwapMode() {
-  if (!isMyTurn || (gameState?.hasActed ?? false)) return;
+  if (!isMyTurn) return;
   swapMode = true;
   takeIds.clear(); giveIds.clear(); selectedHandIds.clear();
   if (gameState) renderGame(gameState);
@@ -486,13 +497,22 @@ function endTurn() {
   swapMode = false; takeIds.clear(); giveIds.clear(); selectedHandIds.clear();
 }
 
+function drawFromCarcass(cardId) {
+  if (!isMyTurn || !gameState?.waitingForCarcassDraw) return;
+  socket.emit('game-action', { type: 'draw-from-carcass', cardId });
+}
+
+function finishCarcassDraw() {
+  if (!isMyTurn) return;
+  socket.emit('game-action', { type: 'finish-carcass-draw' });
+}
+
 // ─── Round / Game End Screens ─────────────────────────────────────────────────
 function renderRoundEnd(state) {
   const n = state.players.length;
   const sorted = [...state.players].sort((a, b) => (b.setCount ?? 0) - (a.setCount ?? 0));
 
-  // Check for total tie flag in log
-  const isTotalTie = state.log && state.log.some(l => l.includes('Total tie'));
+  const isTotalTie = !!(state.totalTie);
 
   let html = '';
 
