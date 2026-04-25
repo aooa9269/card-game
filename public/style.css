@@ -15,6 +15,14 @@
   --radius:      8px;
   --card-w:      70px;
   --card-h:      98px;
+
+  /* ── Deck Theme (overridden by JS) ──── */
+  --card-face-bg:     #fffef5;
+  --card-face-border: #cccccc;
+  --card-font:        Georgia, serif;
+  --back-bg:          linear-gradient(135deg, #1a4a8a 0%, #0d2a5a 100%);
+  --back-border:      #2a6aaa;
+  --back-pattern:     none;
 }
 
 body {
@@ -410,9 +418,10 @@ body {
 .card {
   width: var(--card-w);
   height: var(--card-h);
-  background: var(--cream);
+  background: var(--card-face-bg);
   border-radius: 6px;
-  border: 2px solid #ccc;
+  border: 2px solid var(--card-face-border);
+  font-family: var(--card-font);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -463,25 +472,35 @@ body {
 .card.black .card-rank, .card.black .card-suit-small, .card.black .card-suit-big { color: var(--card-black); }
 
 .card-back {
-  background: linear-gradient(135deg, #1a4a8a 0%, #0d2a5a 100%);
-  border: 2px solid #2a6aaa;
+  background: var(--back-bg);
+  border-color: var(--back-border);
   cursor: default;
   position: relative;
   overflow: hidden;
 }
+/* Pattern overlay */
+.card-back::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--back-pattern);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: 1;
+}
+/* Inner border/glyph decoration */
 .card-back::after {
   content: '✦';
   position: absolute;
   inset: 4px;
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  color: rgba(255,255,255,0.2);
   display: grid;
   place-items: center;
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.2);
+  z-index: 2;
+  pointer-events: none;
 }
 
 /* Small card-backs for opponents */
@@ -691,3 +710,181 @@ body {
 
 /* ── Utilities ────────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
+
+/* ── Deck Customize Button (landing) ──────────────────────────────────────── */
+.btn-deck {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(212,160,23,0.35);
+  color: var(--gold-bright);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.03em;
+}
+.btn-deck:hover { background: rgba(255,255,255,0.13); border-color: var(--gold); }
+
+/* ── Deck Modal ───────────────────────────────────────────────────────────── */
+.deck-modal-box {
+  width: min(700px, 96vw);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+.deck-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0;
+}
+.deck-tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: rgba(255,255,255,0.5);
+  padding: 8px 20px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: -1px;
+}
+.deck-tab.active { color: var(--gold-bright); border-bottom-color: var(--gold-bright); }
+.deck-tab:hover:not(.active) { color: rgba(255,255,255,0.8); }
+
+/* Preset grid */
+.deck-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+  padding: 4px 2px;
+}
+.deck-preset-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 10px 6px;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+}
+.deck-preset-item:hover { background: rgba(255,255,255,0.06); }
+.deck-preset-item.selected { border-color: var(--gold-bright); background: rgba(240,192,64,0.08); }
+.deck-preset-back {
+  width: 52px;
+  height: 72px;
+  border-radius: 5px;
+  border: 2px solid;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.deck-preset-back::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-size: 14px 14px;
+}
+.deck-preset-back::after {
+  content: '✦';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 3px;
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.22);
+}
+.deck-preset-name {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  line-height: 1.2;
+}
+.deck-preset-item.selected .deck-preset-name { color: var(--gold-bright); }
+
+/* Custom tab */
+.deck-custom-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 560px) { .deck-custom-layout { grid-template-columns: 1fr; } }
+.deck-section { display: flex; flex-direction: column; gap: 10px; }
+.deck-section-title {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(212,160,23,0.75);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 5px;
+}
+.deck-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.deck-row label {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.65);
+  min-width: 78px;
+}
+.deck-row input[type="color"] {
+  width: 36px;
+  height: 28px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  padding: 1px;
+}
+.deck-row select {
+  flex: 1;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 5px;
+  color: #fff;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+.deck-row input[type="file"] {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.6);
+  flex: 1;
+}
+.deck-upload-preview {
+  width: 36px;
+  height: 50px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.2);
+  display: none;
+}
+
+/* Preview strip */
+.deck-preview-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0 6px;
+  justify-content: center;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin-top: 16px;
+}
+.deck-preview-label {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-right: 4px;
+}

@@ -602,8 +602,362 @@ socket.on('game-state', (state) => {
 
 socket.on('error', ({ message }) => { toast(message, 'error'); });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// ─── Deck Theme System ───────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const LS_DECK = 'carcass-deck-theme';
+
+const DECK_PRESETS = [
+  {
+    id: 'classic-blue', name: 'Classic Blue',
+    faceBackground: '#fffef5', faceRedColor: '#cc2222', faceBlackColor: '#111111', faceBorderColor: '#cccccc',
+    fontFamily: 'Georgia, serif',
+    backGradient: 'linear-gradient(135deg,#1a4a8a 0%,#0d2a5a 100%)', backBorderColor: '#2a6aaa',
+    backPattern: 'diamonds', backPatternColor: 'rgba(255,255,255,0.13)', customBackImage: null,
+  },
+  {
+    id: 'crimson', name: 'Crimson',
+    faceBackground: '#fff8f8', faceRedColor: '#aa0000', faceBlackColor: '#111111', faceBorderColor: '#e0b0b0',
+    fontFamily: 'Georgia, serif',
+    backGradient: 'linear-gradient(135deg,#8b0000 0%,#3d0000 100%)', backBorderColor: '#cc3333',
+    backPattern: 'crosshatch', backPatternColor: 'rgba(255,200,200,0.11)', customBackImage: null,
+  },
+  {
+    id: 'midnight', name: 'Midnight',
+    faceBackground: '#1a1a2e', faceRedColor: '#ff6b6b', faceBlackColor: '#c8c8ff', faceBorderColor: '#444466',
+    fontFamily: 'Georgia, serif',
+    backGradient: 'linear-gradient(135deg,#16213e 0%,#0f3460 50%,#533483 100%)', backBorderColor: '#8888cc',
+    backPattern: 'stars', backPatternColor: 'rgba(160,160,255,0.15)', customBackImage: null,
+  },
+  {
+    id: 'gold-rush', name: 'Gold Rush',
+    faceBackground: '#fffde7', faceRedColor: '#b71c1c', faceBlackColor: '#3e2723', faceBorderColor: '#d4a017',
+    fontFamily: "'Palatino Linotype', Palatino, 'Book Antiqua', serif",
+    backGradient: 'linear-gradient(135deg,#b8860b 0%,#8b6914 40%,#c9a227 100%)', backBorderColor: '#d4af37',
+    backPattern: 'diamonds', backPatternColor: 'rgba(255,255,160,0.15)', customBackImage: null,
+  },
+  {
+    id: 'forest', name: 'Forest',
+    faceBackground: '#f1f8e9', faceRedColor: '#880000', faceBlackColor: '#1b5e20', faceBorderColor: '#81c784',
+    fontFamily: 'Georgia, serif',
+    backGradient: 'linear-gradient(135deg,#1b5e20 0%,#2e7d32 50%,#1b5e20 100%)', backBorderColor: '#66bb6a',
+    backPattern: 'waves', backPatternColor: 'rgba(144,238,144,0.14)', customBackImage: null,
+  },
+  {
+    id: 'ocean', name: 'Ocean',
+    faceBackground: '#e8f4f8', faceRedColor: '#c62828', faceBlackColor: '#006064', faceBorderColor: '#80deea',
+    fontFamily: "'Trebuchet MS', sans-serif",
+    backGradient: 'linear-gradient(135deg,#006064 0%,#00838f 50%,#004d40 100%)', backBorderColor: '#4dd0e1',
+    backPattern: 'waves', backPatternColor: 'rgba(100,220,255,0.13)', customBackImage: null,
+  },
+  {
+    id: 'fire', name: 'Fire',
+    faceBackground: '#fff8f0', faceRedColor: '#bf360c', faceBlackColor: '#3e2723', faceBorderColor: '#ff8a65',
+    fontFamily: 'Georgia, serif',
+    backGradient: 'linear-gradient(135deg,#bf360c 0%,#e64a19 40%,#ff6f00 100%)', backBorderColor: '#ff8a50',
+    backPattern: 'stripes', backPatternColor: 'rgba(255,200,80,0.13)', customBackImage: null,
+  },
+  {
+    id: 'neon', name: 'Neon',
+    faceBackground: '#0d0d0d', faceRedColor: '#ff0080', faceBlackColor: '#00ff88', faceBorderColor: '#00ff88',
+    fontFamily: "'Courier New', monospace",
+    backGradient: 'linear-gradient(135deg,#050510 0%,#0d0d1a 100%)', backBorderColor: '#00ff88',
+    backPattern: 'grid', backPatternColor: 'rgba(0,255,136,0.09)', customBackImage: null,
+  },
+  {
+    id: 'royal', name: 'Royal Purple',
+    faceBackground: '#faf5ff', faceRedColor: '#880088', faceBlackColor: '#4a0080', faceBorderColor: '#ce93d8',
+    fontFamily: "'Palatino Linotype', Palatino, 'Book Antiqua', serif",
+    backGradient: 'linear-gradient(135deg,#4a148c 0%,#6a1b9a 50%,#38006b 100%)', backBorderColor: '#ce93d8',
+    backPattern: 'diamonds', backPatternColor: 'rgba(220,170,255,0.14)', customBackImage: null,
+  },
+  {
+    id: 'minimal', name: 'Minimal',
+    faceBackground: '#ffffff', faceRedColor: '#d32f2f', faceBlackColor: '#212121', faceBorderColor: '#bdbdbd',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    backGradient: 'linear-gradient(135deg,#e0e0e0 0%,#bdbdbd 100%)', backBorderColor: '#9e9e9e',
+    backPattern: 'none', backPatternColor: 'transparent', customBackImage: null,
+  },
+  {
+    id: 'retro', name: 'Retro',
+    faceBackground: '#f5e6cc', faceRedColor: '#8b1a1a', faceBlackColor: '#2c1810', faceBorderColor: '#a0785a',
+    fontFamily: "'Times New Roman', Times, serif",
+    backGradient: 'linear-gradient(135deg,#6b4226 0%,#8b5e3c 50%,#5c3317 100%)', backBorderColor: '#d2a679',
+    backPattern: 'crosshatch', backPatternColor: 'rgba(255,220,170,0.12)', customBackImage: null,
+  },
+  {
+    id: 'cyberpunk', name: 'Cyberpunk',
+    faceBackground: '#0a0a1a', faceRedColor: '#ff2d78', faceBlackColor: '#00e5ff', faceBorderColor: '#ff2d78',
+    fontFamily: "'Courier New', monospace",
+    backGradient: 'linear-gradient(135deg,#0a0a1a 0%,#1a0a2e 100%)', backBorderColor: '#ff2d78',
+    backPattern: 'grid', backPatternColor: 'rgba(255,45,120,0.09)', customBackImage: null,
+  },
+  {
+    id: 'rose', name: 'Rose',
+    faceBackground: '#fff0f5', faceRedColor: '#c2185b', faceBlackColor: '#880e4f', faceBorderColor: '#f48fb1',
+    fontFamily: 'Georgia, serif',
+    backGradient: 'linear-gradient(135deg,#c2185b 0%,#e91e8c 50%,#880e4f 100%)', backBorderColor: '#f48fb1',
+    backPattern: 'dots', backPatternColor: 'rgba(255,180,210,0.18)', customBackImage: null,
+  },
+  {
+    id: 'arctic', name: 'Arctic',
+    faceBackground: '#f0f8ff', faceRedColor: '#1565c0', faceBlackColor: '#0d47a1', faceBorderColor: '#90caf9',
+    fontFamily: "'Trebuchet MS', sans-serif",
+    backGradient: 'linear-gradient(135deg,#90caf9 0%,#bbdefb 50%,#42a5f5 100%)', backBorderColor: '#42a5f5',
+    backPattern: 'dots', backPatternColor: 'rgba(100,180,255,0.2)', customBackImage: null,
+  },
+  {
+    id: 'obsidian', name: 'Obsidian',
+    faceBackground: '#1a1a1a', faceRedColor: '#ff4444', faceBlackColor: '#d4af37', faceBorderColor: '#333333',
+    fontFamily: 'Georgia, serif',
+    backGradient: 'linear-gradient(135deg,#000000 0%,#1a1a1a 100%)', backBorderColor: '#d4af37',
+    backPattern: 'diamonds', backPatternColor: 'rgba(212,175,55,0.13)', customBackImage: null,
+  },
+  {
+    id: 'sakura', name: 'Sakura',
+    faceBackground: '#fff5f9', faceRedColor: '#d63384', faceBlackColor: '#6f42c1', faceBorderColor: '#ffb3d1',
+    fontFamily: 'Georgia, serif',
+    backGradient: 'linear-gradient(135deg,#f8a5c2 0%,#f368a9 50%,#f8a5c2 100%)', backBorderColor: '#f368a9',
+    backPattern: 'dots', backPatternColor: 'rgba(255,255,255,0.3)', customBackImage: null,
+  },
+  {
+    id: 'slate', name: 'Slate',
+    faceBackground: '#f8f9fa', faceRedColor: '#dc3545', faceBlackColor: '#343a40', faceBorderColor: '#adb5bd',
+    fontFamily: "'Trebuchet MS', sans-serif",
+    backGradient: 'linear-gradient(135deg,#495057 0%,#343a40 100%)', backBorderColor: '#6c757d',
+    backPattern: 'stripes', backPatternColor: 'rgba(255,255,255,0.07)', customBackImage: null,
+  },
+  {
+    id: 'halloween', name: 'Halloween',
+    faceBackground: '#1a0a00', faceRedColor: '#ff6600', faceBlackColor: '#cc33ff', faceBorderColor: '#ff6600',
+    fontFamily: 'Georgia, serif',
+    backGradient: 'linear-gradient(135deg,#1a0a00 0%,#3d1a00 50%,#0d0020 100%)', backBorderColor: '#ff6600',
+    backPattern: 'stars', backPatternColor: 'rgba(255,102,0,0.18)', customBackImage: null,
+  },
+];
+
+// ── Pattern generator ─────────────────────────────────────────────────────────
+function generatePatternURL(type, color) {
+  if (!type || type === 'none') return 'none';
+  const enc = s => s.replace(/#/g, '%23').replace(/"/g, "'");
+  const svg = (body, w = 20, h = 20) =>
+    `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>${enc(body)}</svg>")`;
+  switch (type) {
+    case 'diamonds':
+      return svg(`<polygon points="10,1 19,10 10,19 1,10" fill="${color}"/>`);
+    case 'dots':
+      return svg(`<circle cx="10" cy="10" r="3.5" fill="${color}"/>`);
+    case 'stripes':
+      return svg(`<line x1="0" y1="0" x2="10" y2="10" stroke="${color}" stroke-width="1.8"/>` +
+                 `<line x1="10" y1="0" x2="20" y2="10" stroke="${color}" stroke-width="1.8"/>`);
+    case 'crosshatch':
+      return svg(`<line x1="0" y1="0" x2="20" y2="20" stroke="${color}" stroke-width="1"/>` +
+                 `<line x1="20" y1="0" x2="0" y2="20" stroke="${color}" stroke-width="1"/>`);
+    case 'grid':
+      return svg(`<line x1="10" y1="0" x2="10" y2="20" stroke="${color}" stroke-width="0.6"/>` +
+                 `<line x1="0" y1="10" x2="20" y2="10" stroke="${color}" stroke-width="0.6"/>`);
+    case 'waves':
+      return svg(`<path d="M0 10 Q5 3 10 10 Q15 17 20 10" stroke="${color}" stroke-width="1.5" fill="none"/>`, 20, 20);
+    case 'stars':
+      return svg(`<text x="3" y="15" font-size="14" fill="${color}">✦</text>`);
+    default: return 'none';
+  }
+}
+
+// ── Apply theme to CSS vars ───────────────────────────────────────────────────
+function applyDeckTheme(theme) {
+  let el = document.getElementById('deck-theme-style');
+  if (!el) { el = document.createElement('style'); el.id = 'deck-theme-style'; document.head.appendChild(el); }
+
+  const backBg = theme.customBackImage
+    ? `url(${theme.customBackImage}) center/cover no-repeat`
+    : theme.backGradient;
+  const pat = generatePatternURL(theme.backPattern, theme.backPatternColor);
+
+  el.textContent = `:root {
+    --card-face-bg:     ${theme.faceBackground};
+    --card-red:         ${theme.faceRedColor};
+    --card-black:       ${theme.faceBlackColor};
+    --card-face-border: ${theme.faceBorderColor};
+    --card-font:        ${theme.fontFamily};
+    --back-bg:          ${backBg};
+    --back-border:      ${theme.backBorderColor};
+    --back-pattern:     ${pat};
+  }`;
+}
+
+// ── Active & pending theme state ──────────────────────────────────────────────
+let _savedTheme   = null;   // last confirmed saved theme
+let _pendingTheme = null;   // unsaved edits while modal is open
+
+function loadSavedTheme() {
+  try { _savedTheme = JSON.parse(localStorage.getItem(LS_DECK)); } catch(e) {}
+  if (!_savedTheme) _savedTheme = DECK_PRESETS[0];
+  applyDeckTheme(_savedTheme);
+}
+
+// ── Modal open / close ────────────────────────────────────────────────────────
+function openDeckModal() {
+  _pendingTheme = JSON.parse(JSON.stringify(_savedTheme));
+  applyDeckTheme(_pendingTheme);
+  switchDeckTab('presets');
+  renderPresetGrid();
+  $('deck-modal').classList.remove('hidden');
+}
+
+function closeDeckModal(e) {
+  if (e && e.target !== $('deck-modal')) return;
+  cancelDeckModal();
+}
+
+function cancelDeckModal() {
+  applyDeckTheme(_savedTheme);   // revert
+  $('deck-modal').classList.add('hidden');
+}
+
+function saveDeckTheme() {
+  _savedTheme = JSON.parse(JSON.stringify(_pendingTheme));
+  try { localStorage.setItem(LS_DECK, JSON.stringify(_savedTheme)); } catch(e) {}
+  applyDeckTheme(_savedTheme);
+  $('deck-modal').classList.add('hidden');
+  toast('Deck style saved!', 'success');
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchDeckTab(tab) {
+  ['presets','custom'].forEach(t => {
+    $(`dtab-${t}`).classList.toggle('active', t === tab);
+    $(`deck-tab-${t}`).classList.toggle('hidden', t !== tab);
+  });
+  if (tab === 'custom') syncCustomInputsToTheme(_pendingTheme);
+}
+
+// ── Preset grid ───────────────────────────────────────────────────────────────
+function renderPresetGrid() {
+  const grid = $('deck-presets-grid');
+  grid.innerHTML = '';
+  DECK_PRESETS.forEach(preset => {
+    const item = document.createElement('div');
+    item.className = 'deck-preset-item' + (_pendingTheme.id === preset.id ? ' selected' : '');
+    item.onclick = () => selectPreset(preset);
+
+    // Mini card-back preview
+    const pat = generatePatternURL(preset.backPattern, preset.backPatternColor);
+    const mini = document.createElement('div');
+    mini.className = 'deck-preset-back';
+    mini.style.cssText = `background:${preset.backGradient}; border-color:${preset.backBorderColor};`;
+    mini.style.setProperty('--mini-pat', pat);
+    mini.style.setProperty('background-image', pat === 'none' ? 'none' : pat + `, ${preset.backGradient}`);
+    // Fallback: just use gradient
+    mini.style.background = preset.backGradient;
+    if (pat !== 'none') {
+      mini.style.backgroundImage = `${pat}, ${preset.backGradient}`;
+      mini.style.backgroundSize = '14px 14px, 100% 100%';
+    }
+
+    const label = document.createElement('div');
+    label.className = 'deck-preset-name';
+    label.textContent = preset.name;
+
+    item.appendChild(mini);
+    item.appendChild(label);
+    grid.appendChild(item);
+  });
+}
+
+function selectPreset(preset) {
+  _pendingTheme = JSON.parse(JSON.stringify(preset));
+  applyDeckTheme(_pendingTheme);
+  // Refresh selection highlight
+  document.querySelectorAll('.deck-preset-item').forEach((el, i) => {
+    el.classList.toggle('selected', DECK_PRESETS[i]?.id === preset.id);
+  });
+}
+
+// ── Custom tab sync ───────────────────────────────────────────────────────────
+function hexFromGradient(grad, which) {
+  // Extract first/last colour from "linear-gradient(..., #hex ..." strings
+  const matches = grad.match(/#[0-9a-fA-F]{3,6}/g);
+  if (!matches) return '#000000';
+  return which === 'end' ? matches[matches.length - 1] : matches[0];
+}
+
+function syncCustomInputsToTheme(theme) {
+  $('cust-back-c1').value    = hexFromGradient(theme.backGradient, 'start');
+  $('cust-back-c2').value    = hexFromGradient(theme.backGradient, 'end');
+  $('cust-back-border').value = theme.backBorderColor.startsWith('#') ? theme.backBorderColor : '#2a6aaa';
+  $('cust-back-pattern').value = theme.backPattern || 'none';
+  // Pattern color: extract a hex from rgba or use fallback
+  const pcMatch = theme.backPatternColor?.match(/#[0-9a-fA-F]{3,6}/);
+  $('cust-pattern-color').value = pcMatch ? pcMatch[0] : '#ffffff';
+  $('cust-face-bg').value     = theme.faceBackground.startsWith('#') ? theme.faceBackground : '#fffef5';
+  $('cust-face-red').value    = theme.faceRedColor;
+  $('cust-face-black').value  = theme.faceBlackColor;
+  $('cust-face-border').value = theme.faceBorderColor.startsWith('#') ? theme.faceBorderColor : '#cccccc';
+  // Font: find matching option
+  const fontSel = $('cust-font');
+  const match = [...fontSel.options].find(o => o.value === theme.fontFamily);
+  fontSel.value = match ? match.value : fontSel.options[0].value;
+  // Back image thumb
+  const thumb = $('cust-back-thumb');
+  if (theme.customBackImage) { thumb.src = theme.customBackImage; thumb.style.display = 'block'; }
+  else { thumb.style.display = 'none'; }
+}
+
+function updateCustomTheme() {
+  const c1 = $('cust-back-c1').value;
+  const c2 = $('cust-back-c2').value;
+  const pHex = $('cust-pattern-color').value;
+  const pat = $('cust-back-pattern').value;
+
+  _pendingTheme = {
+    ..._pendingTheme,
+    id: 'custom',
+    name: 'Custom',
+    faceBackground:  $('cust-face-bg').value,
+    faceRedColor:    $('cust-face-red').value,
+    faceBlackColor:  $('cust-face-black').value,
+    faceBorderColor: $('cust-face-border').value,
+    fontFamily:      $('cust-font').value,
+    backGradient:    `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`,
+    backBorderColor: $('cust-back-border').value,
+    backPattern:     pat,
+    backPatternColor: pHex + '33',  // add ~20% opacity
+  };
+  applyDeckTheme(_pendingTheme);
+  // Deselect presets
+  document.querySelectorAll('.deck-preset-item').forEach(el => el.classList.remove('selected'));
+}
+
+// ── Back image upload ─────────────────────────────────────────────────────────
+function handleBackImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { toast('Image must be under 2 MB', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    _pendingTheme = { ..._pendingTheme, id: 'custom', name: 'Custom', customBackImage: ev.target.result };
+    const thumb = $('cust-back-thumb');
+    thumb.src = ev.target.result;
+    thumb.style.display = 'block';
+    applyDeckTheme(_pendingTheme);
+    document.querySelectorAll('.deck-preset-item').forEach(el => el.classList.remove('selected'));
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearBackImage() {
+  _pendingTheme = { ..._pendingTheme, customBackImage: null };
+  $('cust-back-thumb').style.display = 'none';
+  $('cust-back-image').value = '';
+  applyDeckTheme(_pendingTheme);
+}
+
 // ─── URL-based auto-join ──────────────────────────────────────────────────────
 window.addEventListener('load', () => {
+  loadSavedTheme();
+
   const params = new URLSearchParams(window.location.search);
   const joinCode = params.get('join');
   if (joinCode) {

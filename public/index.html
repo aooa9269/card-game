@@ -11,6 +11,7 @@
   <!-- ═══════════════════════════════════ LANDING ════════════════════════════ -->
   <div id="screen-landing" class="screen active">
     <div class="landing-bg"></div>
+    <button class="btn-deck" onclick="openDeckModal()">🎨 Deck Style</button>
     <div class="landing-content">
       <h1 class="title-logo">CARCASS</h1>
       <p class="title-sub">The 21 Community Card Game</p>
@@ -200,6 +201,119 @@
       <div class="winner-display" id="winner-display"></div>
       <div id="final-scores"></div>
       <button class="btn btn-primary" onclick="location.reload()">Play Again</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ DECK MODAL ══════════════════════════ -->
+  <div id="deck-modal" class="modal-overlay hidden" onclick="closeDeckModal(event)">
+    <div class="modal-box deck-modal-box">
+      <h2 style="margin-bottom:14px">🎨 Deck Style</h2>
+
+      <!-- Tab bar -->
+      <div class="deck-tabs">
+        <button class="deck-tab active" id="dtab-presets" onclick="switchDeckTab('presets')">Presets</button>
+        <button class="deck-tab" id="dtab-custom" onclick="switchDeckTab('custom')">Custom</button>
+      </div>
+
+      <!-- Presets tab -->
+      <div id="deck-tab-presets">
+        <div class="deck-presets-grid" id="deck-presets-grid"></div>
+      </div>
+
+      <!-- Custom tab -->
+      <div id="deck-tab-custom" class="hidden">
+        <div class="deck-custom-layout">
+          <!-- Back column -->
+          <div class="deck-section">
+            <div class="deck-section-title">Card Back</div>
+            <div class="deck-row">
+              <label>Gradient</label>
+              <input type="color" id="cust-back-c1" title="Start colour" oninput="updateCustomTheme()">
+              <input type="color" id="cust-back-c2" title="End colour"   oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row">
+              <label>Border</label>
+              <input type="color" id="cust-back-border" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row">
+              <label>Pattern</label>
+              <select id="cust-back-pattern" onchange="updateCustomTheme()">
+                <option value="none">None</option>
+                <option value="diamonds">Diamonds</option>
+                <option value="dots">Dots</option>
+                <option value="stripes">Stripes</option>
+                <option value="crosshatch">Crosshatch</option>
+                <option value="grid">Grid</option>
+                <option value="waves">Waves</option>
+                <option value="stars">Stars ✦</option>
+              </select>
+              <input type="color" id="cust-pattern-color" title="Pattern colour" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row" style="flex-wrap:wrap;gap:6px">
+              <label>Image</label>
+              <input type="file" id="cust-back-image" accept="image/*" onchange="handleBackImageUpload(event)" style="flex:1;min-width:0">
+              <button class="btn btn-ghost" onclick="clearBackImage()" style="font-size:0.72rem;padding:4px 8px">Clear</button>
+            </div>
+            <img id="cust-back-thumb" class="deck-upload-preview" alt="back preview">
+          </div>
+
+          <!-- Face column -->
+          <div class="deck-section">
+            <div class="deck-section-title">Card Face</div>
+            <div class="deck-row">
+              <label>Background</label>
+              <input type="color" id="cust-face-bg" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row">
+              <label>Red suits</label>
+              <input type="color" id="cust-face-red" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row">
+              <label>Black suits</label>
+              <input type="color" id="cust-face-black" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row">
+              <label>Border</label>
+              <input type="color" id="cust-face-border" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-section-title" style="margin-top:8px">Font</div>
+            <div class="deck-row">
+              <select id="cust-font" onchange="updateCustomTheme()" style="flex:1">
+                <option value="Georgia, serif">Georgia (default)</option>
+                <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                <option value="'Palatino Linotype', Palatino, 'Book Antiqua', serif">Palatino</option>
+                <option value="Garamond, 'EB Garamond', serif">Garamond</option>
+                <option value="Arial, Helvetica, sans-serif">Arial</option>
+                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                <option value="'Courier New', monospace">Courier New</option>
+                <option value="Impact, Charcoal, sans-serif">Impact</option>
+                <option value="'Comic Sans MS', cursive">Comic Sans</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live preview strip (always visible) -->
+      <div class="deck-preview-strip">
+        <span class="deck-preview-label">Preview</span>
+        <div class="card card-back" style="cursor:default"></div>
+        <div class="card red" style="cursor:default">
+          <div class="card-corner top"><div class="card-rank">A</div><div class="card-suit-small">♥</div></div>
+          <div class="card-suit-big">♥</div>
+          <div class="card-corner bottom"><div class="card-rank">A</div><div class="card-suit-small">♥</div></div>
+        </div>
+        <div class="card black" style="cursor:default">
+          <div class="card-corner top"><div class="card-rank">K</div><div class="card-suit-small">♠</div></div>
+          <div class="card-suit-big">♠</div>
+          <div class="card-corner bottom"><div class="card-rank">K</div><div class="card-suit-small">♠</div></div>
+        </div>
+      </div>
+
+      <div class="modal-btns" style="margin-top:14px">
+        <button class="btn btn-primary" onclick="saveDeckTheme()">Apply &amp; Save</button>
+        <button class="btn btn-ghost" onclick="cancelDeckModal()">Cancel</button>
+      </div>
     </div>
   </div>
 
