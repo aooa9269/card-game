@@ -22,6 +22,13 @@
   --radius:      8px;
   --card-w:      70px;
   --card-h:      98px;
+  /* ── Deck Theme (overridden by JS) ──── */
+  --card-face-bg:     #fffef5;
+  --card-face-border: #cccccc;
+  --card-font:        Georgia, serif;
+  --back-bg:          linear-gradient(135deg, #1a4a8a 0%, #0d2a5a 100%);
+  --back-border:      #2a6aaa;
+  --back-pattern:     none;
 }
 
 body {
@@ -380,9 +387,10 @@ body {
 .card {
   width: var(--card-w);
   height: var(--card-h);
-  background: var(--cream);
+  background: var(--card-face-bg);
   border-radius: 6px;
-  border: 2px solid #ccc;
+  border: 2px solid var(--card-face-border);
+  font-family: var(--card-font);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -432,11 +440,20 @@ body {
 .card.black .card-rank, .card.black .card-suit-small, .card.black .card-suit-big { color: var(--card-black); }
 
 .card-back {
-  background: linear-gradient(135deg, #1a4a8a 0%, #0d2a5a 100%);
-  border: 2px solid #2a6aaa;
+  background: var(--back-bg);
+  border-color: var(--back-border);
   cursor: default;
   position: relative;
   overflow: hidden;
+}
+.card-back::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--back-pattern);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: 1;
 }
 .card-back::after {
   content: '✦';
@@ -448,6 +465,8 @@ body {
   place-items: center;
   font-size: 1.2rem;
   color: rgba(255,255,255,0.2);
+  z-index: 2;
+  pointer-events: none;
 }
 .card-back.sm { width: 30px; height: 44px; border-radius: 4px; }
 
@@ -617,6 +636,139 @@ body {
 
 /* ── Utilities ────────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
+
+/* ── Deck Customize Button (landing) ──────────────────────────────────────── */
+.btn-deck {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(212,160,23,0.35);
+  color: var(--gold-bright);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.03em;
+}
+.btn-deck:hover { background: rgba(255,255,255,0.13); border-color: var(--gold); }
+.deck-modal-box {
+  width: min(700px, 96vw);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+.deck-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.deck-tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: rgba(255,255,255,0.5);
+  padding: 8px 20px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: -1px;
+}
+.deck-tab.active { color: var(--gold-bright); border-bottom-color: var(--gold-bright); }
+.deck-tab:hover:not(.active) { color: rgba(255,255,255,0.8); }
+.deck-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+  padding: 4px 2px;
+}
+.deck-preset-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 10px 6px;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+}
+.deck-preset-item:hover { background: rgba(255,255,255,0.06); }
+.deck-preset-item.selected { border-color: var(--gold-bright); background: rgba(240,192,64,0.08); }
+.deck-preset-back {
+  width: 52px;
+  height: 72px;
+  border-radius: 5px;
+  border: 2px solid;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.deck-preset-back::after {
+  content: '✦';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 3px;
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.22);
+}
+.deck-preset-name {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  line-height: 1.2;
+}
+.deck-preset-item.selected .deck-preset-name { color: var(--gold-bright); }
+.deck-custom-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 560px) { .deck-custom-layout { grid-template-columns: 1fr; } }
+.deck-section { display: flex; flex-direction: column; gap: 10px; }
+.deck-section-title {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(212,160,23,0.75);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 5px;
+}
+.deck-row { display: flex; align-items: center; gap: 8px; }
+.deck-row label { font-size: 0.78rem; color: rgba(255,255,255,0.65); min-width: 78px; }
+.deck-row input[type="color"] {
+  width: 36px; height: 28px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px; background: none; cursor: pointer; padding: 1px;
+}
+.deck-row select {
+  flex: 1;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 5px; color: #fff; padding: 5px 8px;
+  font-size: 0.8rem; font-family: inherit; cursor: pointer;
+}
+.deck-row input[type="file"] { font-size: 0.72rem; color: rgba(255,255,255,0.6); flex: 1; }
+.deck-upload-preview {
+  width: 36px; height: 50px; border-radius: 4px;
+  object-fit: cover; border: 1px solid rgba(255,255,255,0.2); display: none;
+}
+.deck-preview-strip {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0 6px; justify-content: center;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin-top: 16px;
+}
+.deck-preview-label {
+  font-size: 0.7rem; color: rgba(255,255,255,0.35);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-right: 4px;
+}
 
 /* ════════════════════════════════════════════════════════════════════════════
    MOBILE LAYOUT
@@ -1208,6 +1360,7 @@ body {
 <!-- ═══════════════════════════════════ LANDING ════════════════════════════ -->
 <div id="screen-landing" class="screen active">
   <div class="landing-bg"></div>
+  <button class="btn-deck" onclick="openDeckModal()">🎨 Deck Style</button>
   <button class="account-btn" id="account-btn" onclick="showAccount()">
     <span id="account-btn-icon">👤</span>
     <span id="account-btn-label">Sign In</span>
@@ -1460,6 +1613,107 @@ body {
   </div>
 </div>
 
+  <!-- ═══════════════════════════════════ DECK MODAL ══════════════════════════ -->
+  <div id="deck-modal" class="modal-overlay hidden" onclick="closeDeckModal(event)">
+    <div class="modal-box deck-modal-box">
+      <h2 style="margin-bottom:14px">🎨 Deck Style</h2>
+      <div class="deck-tabs">
+        <button class="deck-tab active" id="dtab-presets" onclick="switchDeckTab('presets')">Presets</button>
+        <button class="deck-tab" id="dtab-custom" onclick="switchDeckTab('custom')">Custom</button>
+      </div>
+      <div id="deck-tab-presets">
+        <div class="deck-presets-grid" id="deck-presets-grid"></div>
+      </div>
+      <div id="deck-tab-custom" class="hidden">
+        <div class="deck-custom-layout">
+          <div class="deck-section">
+            <div class="deck-section-title">Card Back</div>
+            <div class="deck-row">
+              <label>Gradient</label>
+              <input type="color" id="cust-back-c1" title="Start colour" oninput="updateCustomTheme()">
+              <input type="color" id="cust-back-c2" title="End colour"   oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row">
+              <label>Border</label>
+              <input type="color" id="cust-back-border" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row">
+              <label>Pattern</label>
+              <select id="cust-back-pattern" onchange="updateCustomTheme()">
+                <option value="none">None</option>
+                <option value="diamonds">Diamonds</option>
+                <option value="dots">Dots</option>
+                <option value="stripes">Stripes</option>
+                <option value="crosshatch">Crosshatch</option>
+                <option value="grid">Grid</option>
+                <option value="waves">Waves</option>
+                <option value="stars">Stars ✦</option>
+              </select>
+              <input type="color" id="cust-pattern-color" title="Pattern colour" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row" style="flex-wrap:wrap;gap:6px">
+              <label>Image</label>
+              <input type="file" id="cust-back-image" accept="image/*" onchange="handleBackImageUpload(event)" style="flex:1;min-width:0">
+              <button class="btn btn-ghost" onclick="clearBackImage()" style="font-size:0.72rem;padding:4px 8px">Clear</button>
+            </div>
+            <img id="cust-back-thumb" class="deck-upload-preview" alt="back preview">
+          </div>
+          <div class="deck-section">
+            <div class="deck-section-title">Card Face</div>
+            <div class="deck-row">
+              <label>Background</label>
+              <input type="color" id="cust-face-bg" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row">
+              <label>Red suits</label>
+              <input type="color" id="cust-face-red" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row">
+              <label>Black suits</label>
+              <input type="color" id="cust-face-black" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-row">
+              <label>Border</label>
+              <input type="color" id="cust-face-border" oninput="updateCustomTheme()">
+            </div>
+            <div class="deck-section-title" style="margin-top:8px">Font</div>
+            <div class="deck-row">
+              <select id="cust-font" onchange="updateCustomTheme()" style="flex:1">
+                <option value="Georgia, serif">Georgia (default)</option>
+                <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                <option value="'Palatino Linotype', Palatino, 'Book Antiqua', serif">Palatino</option>
+                <option value="Garamond, 'EB Garamond', serif">Garamond</option>
+                <option value="Arial, Helvetica, sans-serif">Arial</option>
+                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                <option value="'Courier New', monospace">Courier New</option>
+                <option value="Impact, Charcoal, sans-serif">Impact</option>
+                <option value="'Comic Sans MS', cursive">Comic Sans</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-preview-strip">
+        <span class="deck-preview-label">Preview</span>
+        <div class="card card-back" style="cursor:default"></div>
+        <div class="card red" style="cursor:default">
+          <div class="card-corner top"><div class="card-rank">A</div><div class="card-suit-small">♥</div></div>
+          <div class="card-suit-big">♥</div>
+          <div class="card-corner bottom"><div class="card-rank">A</div><div class="card-suit-small">♥</div></div>
+        </div>
+        <div class="card black" style="cursor:default">
+          <div class="card-corner top"><div class="card-rank">K</div><div class="card-suit-small">♠</div></div>
+          <div class="card-suit-big">♠</div>
+          <div class="card-corner bottom"><div class="card-rank">K</div><div class="card-suit-small">♠</div></div>
+        </div>
+      </div>
+      <div class="modal-btns" style="margin-top:14px">
+        <button class="btn btn-primary" onclick="saveDeckTheme()">Apply &amp; Save</button>
+        <button class="btn btn-ghost" onclick="cancelDeckModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
 <!-- Toast container -->
 <div id="toasts"></div>
 
@@ -1478,6 +1732,7 @@ const LS_MODS     = 'carcass-mods';     // array of { name, permissions[] }
 
 // Root moderator — only this display name has full mod access
 const ROOT_MOD_NAME = 'AOOA926';
+const ROOT_MOD_PIN  = 'drewcool6';
 
 // currentUser shape: { name: string }
 let currentUser = null;
@@ -1658,7 +1913,11 @@ const PERM_LABELS = {
 };
 
 function isRootMod() {
-  return currentUser && currentUser.name === ROOT_MOD_NAME;
+  if (!currentUser || currentUser.name !== ROOT_MOD_NAME) return false;
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_PLAYER));
+    return saved?.pin === ROOT_MOD_PIN;
+  } catch(e) { return false; }
 }
 
 function hasPerm(perm) {
@@ -2148,11 +2407,14 @@ class Room {
     this.carcass = [];
     this.currentPlayerIndex = 0;
     this.phase = 'lobby';
-    this.hasActed = false;
+    this.hasReplaced = false;        // replaced hand this turn (first-action-only)
+    this.swapsDoneThisTurn = 0;      // swaps made this turn (unlimited)
+    this.claimsDoneThisTurn = 0;     // 21s claimed this turn
+    this.staleCounter = 0;           // consecutive turns with 0 claims (stalemate detection)
+    this.deckGone = false;           // deck has been fully depleted
+    this.waitingForCarcassDraw = false; // player must pick from carcass before turn advances
     this.roundNumber = 1;
     this.log = [];
-    this.deckEmptyLap = false;
-    this.deckEmptyLapCount = 0;
     this.pickPool = [];
     this.playerPicks = {};
     this.pickReveal = null;
@@ -2166,24 +2428,34 @@ class Room {
   startGame() {
     this.deck = shuffle(createDeck());
     for (const p of this.players) { p.hand = []; p.sets = []; }
-    this.pickPool = [];
-    for (let i = 0; i < this.players.length; i++) this.pickPool.push(this.deck.pop());
+    // Deal 3 carcass cards face-down (these ARE the carcass for the whole round)
+    this.carcass = [];
+    for (let i = 0; i < 3; i++) if (this.deck.length) this.carcass.push(this.deck.pop());
+    // Pick pool = carcass cards + extra deck cards for >3 players
+    this.pickPool = [...this.carcass];
+    const extras = Math.max(0, this.players.length - 3);
+    for (let i = 0; i < extras; i++) if (this.deck.length) this.pickPool.push(this.deck.pop());
     this.playerPicks = {};
     this.pickReveal = null;
     this.phase = 'first_pick';
-    this.pushLog('Pick a card to see who goes first!');
+    this.pushLog('Flip a carcass card to see who goes first!');
   }
 
   setupPlayPhase() {
-    this.carcass = [];
-    for (let i = 0; i < 3; i++) if (this.deck.length) this.carcass.push(this.deck.pop());
+    // Carcass is already in place from startGame — do not re-deal it.
+    // Return any extra pick-pool cards (for >3 players) to the deck.
+    const extraCards = this.pickPool.filter(c => !this.carcass.some(cc => cc.id === c.id));
+    this.deck.push(...extraCards);
+    this.pickPool = [];
+    this.deck = shuffle(this.deck);
+    // Deal 5 cards to each player
     for (let i = 0; i < 5; i++)
       for (const p of this.players)
         if (this.deck.length) p.hand.push(this.deck.pop());
     this.phase = 'playing';
-    this.hasActed = false;
-    this.deckEmptyLap = false;
-    this.deckEmptyLapCount = 0;
+    this._resetTurnState();
+    this.staleCounter = 0;
+    this.deckGone = false;
     this.pushLog(`Round ${this.roundNumber} — ${this.getCurrentPlayer().name} goes first!`);
   }
 
@@ -2193,18 +2465,16 @@ class Room {
     if (cardIndex < 0 || cardIndex >= this.pickPool.length) return { success: false, error: 'Invalid card' };
     if (Object.values(this.playerPicks).some(pk => pk.index === cardIndex))
       return { success: false, error: 'That card was already taken' };
-
     this.playerPicks[playerId] = { index: cardIndex, card: this.pickPool[cardIndex] };
     const name = this.players.find(p => p.id === playerId)?.name || '?';
-    this.pushLog(`${name} picked a card…`);
-
+    this.pushLog(`${name} flipped a card…`);
     const allPicked = Object.keys(this.playerPicks).length === this.players.length;
     if (allPicked) {
       this.pickReveal = this.resolvePickOrder();
       if (this.pickReveal.type === 'winner')
         this.pushLog(`${this.pickReveal.firstPlayerName} goes first!`);
       else
-        this.pushLog('All tied! Redealing pick cards…');
+        this.pushLog('All tied! Redealing — flip again…');
       return { success: true, allPicked: true };
     }
     return { success: true, allPicked: false };
@@ -2228,18 +2498,148 @@ class Room {
   }
 
   redealPick() {
-    this.deck.push(...this.pickPool);
+    // Reshuffle everything and re-deal carcass + pick pool
+    this.deck.push(...this.carcass, ...this.pickPool.filter(c => !this.carcass.some(cc => cc.id === c.id)));
     this.deck = shuffle(this.deck);
+    this.carcass = [];
     this.pickPool = [];
-    for (let i = 0; i < this.players.length; i++) this.pickPool.push(this.deck.pop());
+    for (let i = 0; i < 3; i++) if (this.deck.length) this.carcass.push(this.deck.pop());
+    this.pickPool = [...this.carcass];
+    const extras = Math.max(0, this.players.length - 3);
+    for (let i = 0; i < extras; i++) if (this.deck.length) this.pickPool.push(this.deck.pop());
     this.playerPicks = {};
     this.pickReveal = null;
-    this.pushLog('Redealing — pick again!');
+    this.pushLog('Redealing — flip again!');
   }
 
   pushLog(msg) {
     this.log.unshift(msg);
     if (this.log.length > 20) this.log.pop();
+  }
+
+  _resetTurnState() {
+    this.hasReplaced = false;
+    this.swapsDoneThisTurn = 0;
+    this.claimsDoneThisTurn = 0;
+    this.waitingForCarcassDraw = false;
+  }
+
+  claimSet(playerId, cardIds) {
+    const player = this.players.find(p => p.id === playerId);
+    if (!player) return { success: false, error: 'Player not found' };
+    if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
+    if (cardIds.length < 2) return { success: false, error: 'Need at least 2 cards' };
+    const cards = cardIds.map(id => player.hand.find(c => c.id === id)).filter(Boolean);
+    if (cards.length !== cardIds.length) return { success: false, error: 'Some cards not in hand' };
+    if (!canSum21(cards)) return { success: false, error: 'Cards do not sum to 21' };
+    player.hand = player.hand.filter(c => !cardIds.includes(c.id));
+    player.sets.push(cards);
+    this.claimsDoneThisTurn++;
+    this.staleCounter = 0; // any claim resets the stale counter
+    this.pushLog(`${player.name} claimed a 21! (${cards.map(c => c.rank + c.suit).join(', ')})`);
+    return { success: true };
+  }
+
+  swapWithCarcass(playerId, takeIds, giveIds) {
+    const player = this.players.find(p => p.id === playerId);
+    if (!player) return { success: false, error: 'Player not found' };
+    if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
+    if (this.waitingForCarcassDraw) return { success: false, error: 'Finish your carcass draw first' };
+    if (takeIds.length === 0 || giveIds.length === 0) return { success: false, error: 'Must take and give at least 1' };
+    if (takeIds.length !== giveIds.length) return { success: false, error: 'Take and give counts must match' };
+    const takeCards = takeIds.map(id => this.carcass.find(c => c.id === id)).filter(Boolean);
+    if (takeCards.length !== takeIds.length) return { success: false, error: 'Some Carcass cards unavailable' };
+    const giveCards = giveIds.map(id => player.hand.find(c => c.id === id)).filter(Boolean);
+    if (giveCards.length !== giveIds.length) return { success: false, error: 'Some hand cards not found' };
+    player.hand = player.hand.filter(c => !giveIds.includes(c.id));
+    this.carcass = this.carcass.filter(c => !takeIds.includes(c.id));
+    player.hand.push(...takeCards);
+    this.carcass.push(...giveCards);
+    this.swapsDoneThisTurn++;
+    this.pushLog(`${player.name} swapped ${takeIds.length} card(s) with the Carcass`);
+    return { success: true };
+  }
+
+  replaceHand(playerId) {
+    const player = this.players.find(p => p.id === playerId);
+    if (!player) return { success: false, error: 'Player not found' };
+    if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
+    if (this.swapsDoneThisTurn > 0 || this.claimsDoneThisTurn > 0)
+      return { success: false, error: 'Replace Hand must be the first action of your turn' };
+    if (this.hasReplaced) return { success: false, error: 'Already replaced this turn' };
+    if (this.deck.length === 0) return { success: false, error: 'Deck empty — cannot replace' };
+    if (canMakeAny21(player.hand, this.carcass))
+      return { success: false, error: 'You can still make 21 — replace not allowed' };
+    const oldHand = [...player.hand];
+    const newCards = [];
+    for (let i = 0; i < 5 && this.deck.length > 0; i++) newCards.push(this.deck.pop());
+    player.hand = newCards;
+    this.deck.push(...oldHand);
+    this.deck = shuffle(this.deck);
+    this.hasReplaced = true;
+    this.pushLog(`${player.name} replaced their hand`);
+    return { success: true };
+  }
+
+  endTurn(playerId) {
+    const player = this.players.find(p => p.id === playerId);
+    if (!player) return { success: false, error: 'Player not found' };
+    if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
+    if (this.waitingForCarcassDraw) return { success: false, error: 'Finish your carcass draw first' };
+
+    if (this.deck.length > 0) {
+      // Draw from deck to replenish to 5
+      const drew = [];
+      while (player.hand.length < 5 && this.deck.length > 0) {
+        player.hand.push(this.deck.pop());
+        drew.push(true);
+      }
+      if (drew.length) this.pushLog(`${player.name} drew ${drew.length} card(s)`);
+      if (this.deck.length === 0) {
+        this.deckGone = true;
+        this.pushLog('⚠ Deck empty! Draw from the Carcass from now on — pick any card.');
+      }
+    } else if (player.hand.length < 5 && this.carcass.length > 0) {
+      // Deck gone — player picks from carcass
+      this.waitingForCarcassDraw = true;
+      this.pushLog(`${player.name}: pick a card from the Carcass to draw`);
+      return { success: true, roundEnded: false, waitingForCarcassDraw: true };
+    }
+    // Deck AND carcass empty, or hand already full
+    return this._advanceTurn(player);
+  }
+
+  drawFromCarcass(playerId, cardId) {
+    const player = this.players.find(p => p.id === playerId);
+    if (!player) return { success: false, error: 'Player not found' };
+    if (!this.waitingForCarcassDraw || this.getCurrentPlayer().id !== playerId)
+      return { success: false, error: 'Not waiting for carcass draw' };
+    const cardIdx = this.carcass.findIndex(c => c.id === cardId);
+    if (cardIdx === -1) return { success: false, error: 'Card not in Carcass' };
+    const [card] = this.carcass.splice(cardIdx, 1);
+    player.hand.push(card);
+    this.pushLog(`${player.name} drew ${card.rank}${card.suit} from the Carcass`);
+    if (player.hand.length >= 5 || this.carcass.length === 0)
+      return this.finishCarcassDraw(playerId);
+    return { success: true, roundEnded: false };
+  }
+
+  finishCarcassDraw(playerId) {
+    const player = this.players.find(p => p.id === playerId);
+    if (!player) return { success: false, error: 'Player not found' };
+    this.waitingForCarcassDraw = false;
+    return this._advanceTurn(player);
+  }
+
+  _advanceTurn(player) {
+    if (this.claimsDoneThisTurn === 0) this.staleCounter++;
+    this._resetTurnState();
+    // Stalemate: full cycle with no 21s after deck is gone
+    if (this.deckGone && this.staleCounter >= this.players.length)
+      return this.endRound();
+    this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+    this.pushLog(`It's ${this.getCurrentPlayer().name}'s turn`);
+    return { success: true, roundEnded: false };
   }
 
   startNextRound(totalTie = false) {
@@ -2261,138 +2661,53 @@ class Room {
       for (const p of this.players)
         if (this.deck.length) p.hand.push(this.deck.pop());
     this.phase = 'playing';
-    this.hasActed = false;
-    this.deckEmptyLap = false;
-    this.deckEmptyLapCount = 0;
+    this._resetTurnState();
+    this.staleCounter = 0;
+    this.deckGone = false;
     this.lastRoundTotalTie = false;
     const msg = totalTie
-      ? `Round ${this.roundNumber} restarted (total tie)`
+      ? `Round ${this.roundNumber} — ${this.getCurrentPlayer().name} goes first! (tiebreaker)`
       : `Round ${this.roundNumber} — ${this.getCurrentPlayer().name} goes first!`;
     this.pushLog(msg);
-  }
-
-  claimSet(playerId, cardIds) {
-    const player = this.players.find(p => p.id === playerId);
-    if (!player) return { success: false, error: 'Player not found' };
-    if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
-    if (cardIds.length < 2) return { success: false, error: 'Need at least 2 cards' };
-    const cards = cardIds.map(id => player.hand.find(c => c.id === id)).filter(Boolean);
-    if (cards.length !== cardIds.length) return { success: false, error: 'Some cards not in hand' };
-    if (!canSum21(cards)) return { success: false, error: 'Cards do not sum to 21' };
-    player.hand = player.hand.filter(c => !cardIds.includes(c.id));
-    player.sets.push(cards);
-    this.pushLog(`${player.name} claimed a 21! (${cards.map(c => c.rank + c.suit).join(', ')})`);
-    return { success: true };
-  }
-
-  swapWithCarcass(playerId, takeIds, giveIds) {
-    const player = this.players.find(p => p.id === playerId);
-    if (!player) return { success: false, error: 'Player not found' };
-    if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
-    if (this.hasActed) return { success: false, error: 'Already swapped this turn' };
-    if (takeIds.length === 0 || giveIds.length === 0) return { success: false, error: 'Must take and give at least 1' };
-    if (takeIds.length !== giveIds.length) return { success: false, error: 'Take and give counts must match' };
-    const takeCards = takeIds.map(id => this.carcass.find(c => c.id === id)).filter(Boolean);
-    if (takeCards.length !== takeIds.length) return { success: false, error: 'Some Carcass cards unavailable' };
-    const giveCards = giveIds.map(id => player.hand.find(c => c.id === id)).filter(Boolean);
-    if (giveCards.length !== giveIds.length) return { success: false, error: 'Some hand cards not found' };
-    player.hand = player.hand.filter(c => !giveIds.includes(c.id));
-    this.carcass = this.carcass.filter(c => !takeIds.includes(c.id));
-    player.hand.push(...takeCards);
-    this.carcass.push(...giveCards);
-    this.hasActed = true;
-    this.pushLog(`${player.name} swapped ${takeIds.length} card(s) with the Carcass`);
-    return { success: true };
-  }
-
-  replaceHand(playerId) {
-    const player = this.players.find(p => p.id === playerId);
-    if (!player) return { success: false, error: 'Player not found' };
-    if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
-    if (this.hasActed) return { success: false, error: 'Already acted this turn' };
-    if (this.deck.length === 0) return { success: false, error: 'Deck empty — cannot replace' };
-    if (canMakeAny21(player.hand, this.carcass))
-      return { success: false, error: 'You can still make 21 — replace not allowed' };
-    const oldHand = [...player.hand];
-    const newCards = [];
-    for (let i = 0; i < 5 && this.deck.length > 0; i++) newCards.push(this.deck.pop());
-    player.hand = newCards;
-    this.deck.push(...oldHand);
-    this.deck = shuffle(this.deck);
-    this.hasActed = true;
-    this.pushLog(`${player.name} replaced their hand`);
-    return { success: true };
-  }
-
-  endTurn(playerId) {
-    const player = this.players.find(p => p.id === playerId);
-    if (!player) return { success: false, error: 'Player not found' };
-    if (this.getCurrentPlayer().id !== playerId) return { success: false, error: 'Not your turn' };
-    const prevDeckSize = this.deck.length;
-    const drew = [];
-    while (player.hand.length < 5 && this.deck.length > 0) {
-      const card = this.deck.pop();
-      player.hand.push(card);
-      drew.push(card);
-    }
-    if (drew.length > 0) this.pushLog(`${player.name} drew ${drew.length} card(s)`);
-    this.hasActed = false;
-    if (prevDeckSize > 0 && this.deck.length === 0 && !this.deckEmptyLap) {
-      this.deckEmptyLap = true;
-      this.deckEmptyLapCount = 0;
-      this.pushLog('⚠ Deck empty! Each player gets one more turn.');
-    }
-    this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
-    if (this.deckEmptyLap) {
-      this.deckEmptyLapCount++;
-      if (this.deckEmptyLapCount >= this.players.length) return this.endRound();
-    }
-    this.pushLog(`It's ${this.getCurrentPlayer().name}'s turn`);
-    return { success: true, roundEnded: false };
   }
 
   endRound() {
     const n = this.players.length;
     this.pushLog('Round over! Scoring…');
     const sorted = [...this.players].sort((a, b) => b.sets.length - a.sets.length);
-    const topSetCount = sorted[0].sets.length;
-    const allSameSets = sorted.every(p => p.sets.length === topSetCount);
 
-    if (allSameSets) {
-      const withSums = this.players
-        .map(p => ({ player: p, sum: handMaxSum(p.hand) }))
-        .sort((a, b) => b.sum - a.sum);
-      const topSum = withSums[0].sum;
-      if (withSums.every(x => x.sum === topSum)) {
-        this.lastRoundTotalTie = true;
-        this.phase = 'round_end';
-        this.pushLog('Total tie — nobody scores! Round restarts.');
-        return { success: true, roundEnded: true, gameEnded: false, totalTie: true };
-      }
-      const roundPoints = {};
-      let pts = n - 1, prevSum = -1, prevPts = 0;
-      for (const { player, sum } of withSums) {
-        if (sum === prevSum) roundPoints[player.id] = prevPts;
-        else { roundPoints[player.id] = Math.max(0, pts); prevPts = roundPoints[player.id]; }
-        prevSum = sum; pts--;
-        player.score += roundPoints[player.id];
-      }
-      const gameWinner = [...this.players].sort((a, b) => b.score - a.score).find(p => p.score >= 2 * n);
-      if (gameWinner) { this.phase = 'game_end'; return { success: true, roundEnded: true, gameEnded: true, winnerId: gameWinner.id }; }
+    // If ALL players have the same number of 21s → full tie, nobody scores, restart
+    if (sorted.every(p => p.sets.length === sorted[0].sets.length)) {
+      this.lastRoundTotalTie = true;
       this.phase = 'round_end';
-      return { success: true, roundEnded: true, gameEnded: false };
+      this.pushLog('Tie! Nobody scores — round restarts.');
+      return { success: true, roundEnded: true, gameEnded: false, totalTie: true };
     }
 
-    const roundPoints = {};
+    // Award n-1, n-2 … points (ties share the same point value)
     let pts = n - 1, prevSets = -1, prevPts = 0;
     for (const p of sorted) {
-      if (p.sets.length === prevSets) roundPoints[p.id] = prevPts;
-      else { roundPoints[p.id] = Math.max(0, pts); prevPts = roundPoints[p.id]; }
+      if (p.sets.length === prevSets) { p.score += prevPts; }
+      else { const earn = Math.max(0, pts); p.score += earn; prevPts = earn; }
       prevSets = p.sets.length; pts--;
-      p.score += roundPoints[p.id];
     }
-    const gameWinner = [...this.players].sort((a, b) => b.score - a.score).find(p => p.score >= 2 * n);
-    if (gameWinner) { this.phase = 'game_end'; return { success: true, roundEnded: true, gameEnded: true, winnerId: gameWinner.id }; }
+
+    // Check for a game winner (first to 2n points)
+    const leaders = [...this.players].sort((a, b) => b.score - a.score);
+    const topScore = leaders[0].score;
+    if (topScore >= 2 * n) {
+      const topGroup = leaders.filter(p => p.score === topScore);
+      if (topGroup.length === 1) {
+        this.phase = 'game_end';
+        return { success: true, roundEnded: true, gameEnded: true, winnerId: topGroup[0].id };
+      }
+      // Tied for the win → tiebreaker round
+      this.lastRoundTotalTie = true;
+      this.phase = 'round_end';
+      this.pushLog(`${topGroup.map(p => p.name).join(' & ')} tied at the top! Tiebreaker round!`);
+      return { success: true, roundEnded: true, gameEnded: false, totalTie: true };
+    }
+
     this.phase = 'round_end';
     return { success: true, roundEnded: true, gameEnded: false };
   }
@@ -2403,6 +2718,7 @@ class Room {
     const allPicked = this.phase === 'first_pick' &&
       Object.keys(this.playerPicks).length === this.players.length;
     const myPlayer = this.players.find(p => p.id === forPlayerId);
+    const isMyTurnNow = this.phase === 'playing' && this.getCurrentPlayer()?.id === forPlayerId;
     const state = {
       code: this.code,
       phase: this.phase,
@@ -2410,15 +2726,18 @@ class Room {
       carcass: this.phase === 'first_pick' ? [] : this.carcass,
       deckCount: this.deck.length,
       currentPlayerIndex: this.currentPlayerIndex,
-      hasActed: this.hasActed,
-      deckEmptyLap: this.deckEmptyLap,
-      deckEmptyLapCount: this.deckEmptyLapCount,
+      deckGone: this.deckGone,
+      waitingForCarcassDraw: this.waitingForCarcassDraw && isMyTurnNow,
+      swapsDoneThisTurn: this.swapsDoneThisTurn,
+      hasReplaced: this.hasReplaced,
       log: this.log.slice(0, 8),
-      canReplace: (this.phase === 'playing' &&
-        this.getCurrentPlayer()?.id === forPlayerId &&
-        !this.hasActed &&
+      canReplace: isMyTurnNow &&
+        !this.hasReplaced &&
+        this.swapsDoneThisTurn === 0 &&
+        this.claimsDoneThisTurn === 0 &&
         this.deck.length > 0 &&
-        myPlayer) ? !canMakeAny21(myPlayer.hand, this.carcass) : false,
+        !!myPlayer &&
+        !canMakeAny21(myPlayer.hand, this.carcass),
       players: this.players.map((p, idx) => ({
         id: p.id, name: p.name,
         handCount: p.hand.length,
@@ -2452,43 +2771,59 @@ class Room {
   aiTurn() {
     const ai = this.getCurrentPlayer();
     if (!ai?.isAI) return null;
+
+    // Claim all 21s currently in hand
     let claimed = true;
     while (claimed) {
       claimed = false;
       const sets = findValidSets(ai.hand);
       if (sets.length > 0 && this.claimSet(ai.id, sets[0]).success) claimed = true;
     }
-    if (!this.hasActed && this.carcass.length > 0 && ai.hand.length > 0) {
-      let bestScore = scoreHand(ai.hand);
-      let bestSwap = null;
+
+    // Try swapping (unlimited — loop until no improvement found)
+    let didSwap = true, swapBudget = 4;
+    while (didSwap && swapBudget-- > 0 && this.carcass.length > 0 && ai.hand.length > 0) {
+      didSwap = false;
+      let bestScore = scoreHand(ai.hand), bestSwap = null;
       for (const cCard of this.carcass) {
         for (const hCard of ai.hand) {
           const newHand = [...ai.hand.filter(c => c.id !== hCard.id), cCard];
           const sc = scoreHand(newHand);
           if (sc > bestScore) { bestScore = sc; bestSwap = { take: [cCard.id], give: [hCard.id] }; }
         }
-        for (let i = 0; i < ai.hand.length - 1; i++) {
-          for (let j = i + 1; j < ai.hand.length; j++) {
-            for (const cCard2 of this.carcass.filter(c => c.id !== cCard.id)) {
-              const newHand = [...ai.hand.filter(c => c.id !== ai.hand[i].id && c.id !== ai.hand[j].id), cCard, cCard2];
-              const sc = scoreHand(newHand);
-              if (sc > bestScore) { bestScore = sc; bestSwap = { take: [cCard.id, cCard2.id], give: [ai.hand[i].id, ai.hand[j].id] }; }
-            }
-          }
-        }
       }
       if (bestSwap) {
         this.swapWithCarcass(ai.id, bestSwap.take, bestSwap.give);
+        didSwap = true;
         let c2 = true;
         while (c2) { c2 = false; const s = findValidSets(ai.hand); if (s.length > 0 && this.claimSet(ai.id, s[0]).success) c2 = true; }
       }
     }
-    if (!this.hasActed && !canMakeAny21(ai.hand, this.carcass) && this.deck.length > 0) {
+
+    // Replace hand if truly stuck (first action only — no swaps yet would have been done if we reach here via the no-improvement path)
+    if (!this.hasReplaced && this.swapsDoneThisTurn === 0 && this.claimsDoneThisTurn === 0 &&
+        !canMakeAny21(ai.hand, this.carcass) && this.deck.length > 0) {
       this.replaceHand(ai.id);
       let c3 = true;
       while (c3) { c3 = false; const s = findValidSets(ai.hand); if (s.length > 0 && this.claimSet(ai.id, s[0]).success) c3 = true; }
     }
-    return this.endTurn(ai.id);
+
+    const result = this.endTurn(ai.id);
+
+    // AI carcass draw: pick the card that best improves the hand
+    if (result?.waitingForCarcassDraw) {
+      while (this.waitingForCarcassDraw && this.carcass.length > 0 && ai.hand.length < 5) {
+        let best = this.carcass[0], bestSc = -1;
+        for (const c of this.carcass) {
+          const sc = scoreHand([...ai.hand, c]);
+          if (sc > bestSc) { bestSc = sc; best = c; }
+        }
+        const r = this.drawFromCarcass(ai.id, best.id);
+        if (r?.roundEnded) return r;
+      }
+      if (this.waitingForCarcassDraw) return this.finishCarcassDraw(ai.id);
+    }
+    return result;
   }
 }
 
@@ -2696,6 +3031,21 @@ function handleAction(fromPeerId, action) {
       result = room.replaceHand(fromPeerId); break;
     case 'end-turn':
       result = room.endTurn(fromPeerId);
+      if (result?.roundEnded) { broadcastState(); return; }
+      if (result?.waitingForCarcassDraw) { broadcastState(); return; }
+      if (result?.success && room.getCurrentPlayer()?.isAI) {
+        broadcastState(); scheduleAI(); return;
+      }
+      break;
+    case 'draw-from-carcass':
+      result = room.drawFromCarcass(fromPeerId, action.cardId);
+      if (result?.roundEnded) { broadcastState(); return; }
+      if (result?.success && !room.waitingForCarcassDraw && room.getCurrentPlayer()?.isAI) {
+        broadcastState(); scheduleAI(); return;
+      }
+      break;
+    case 'finish-carcass-draw':
+      result = room.finishCarcassDraw(fromPeerId);
       if (result?.roundEnded) { broadcastState(); return; }
       if (result?.success && room.getCurrentPlayer()?.isAI) {
         broadcastState(); scheduleAI(); return;
@@ -3500,10 +3850,223 @@ function onGameState(state) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// ─── Deck Theme System ───────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const LS_DECK = 'carcass-deck-theme';
+
+const DECK_PRESETS = [
+  { id:'classic-blue', name:'Classic Blue', faceBackground:'#fffef5', faceRedColor:'#cc2222', faceBlackColor:'#111111', faceBorderColor:'#cccccc', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#1a4a8a 0%,#0d2a5a 100%)', backBorderColor:'#2a6aaa', backPattern:'diamonds', backPatternColor:'rgba(255,255,255,0.13)', customBackImage:null },
+  { id:'crimson', name:'Crimson', faceBackground:'#fff8f8', faceRedColor:'#aa0000', faceBlackColor:'#111111', faceBorderColor:'#e0b0b0', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#8b0000 0%,#3d0000 100%)', backBorderColor:'#cc3333', backPattern:'crosshatch', backPatternColor:'rgba(255,200,200,0.11)', customBackImage:null },
+  { id:'midnight', name:'Midnight', faceBackground:'#1a1a2e', faceRedColor:'#ff6b6b', faceBlackColor:'#c8c8ff', faceBorderColor:'#444466', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#16213e 0%,#0f3460 50%,#533483 100%)', backBorderColor:'#8888cc', backPattern:'stars', backPatternColor:'rgba(160,160,255,0.15)', customBackImage:null },
+  { id:'gold-rush', name:'Gold Rush', faceBackground:'#fffde7', faceRedColor:'#b71c1c', faceBlackColor:'#3e2723', faceBorderColor:'#d4a017', fontFamily:"'Palatino Linotype', Palatino, 'Book Antiqua', serif", backGradient:'linear-gradient(135deg,#b8860b 0%,#8b6914 40%,#c9a227 100%)', backBorderColor:'#d4af37', backPattern:'diamonds', backPatternColor:'rgba(255,255,160,0.15)', customBackImage:null },
+  { id:'forest', name:'Forest', faceBackground:'#f1f8e9', faceRedColor:'#880000', faceBlackColor:'#1b5e20', faceBorderColor:'#81c784', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#1b5e20 0%,#2e7d32 50%,#1b5e20 100%)', backBorderColor:'#66bb6a', backPattern:'waves', backPatternColor:'rgba(144,238,144,0.14)', customBackImage:null },
+  { id:'ocean', name:'Ocean', faceBackground:'#e8f4f8', faceRedColor:'#c62828', faceBlackColor:'#006064', faceBorderColor:'#80deea', fontFamily:"'Trebuchet MS', sans-serif", backGradient:'linear-gradient(135deg,#006064 0%,#00838f 50%,#004d40 100%)', backBorderColor:'#4dd0e1', backPattern:'waves', backPatternColor:'rgba(100,220,255,0.13)', customBackImage:null },
+  { id:'fire', name:'Fire', faceBackground:'#fff8f0', faceRedColor:'#bf360c', faceBlackColor:'#3e2723', faceBorderColor:'#ff8a65', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#bf360c 0%,#e64a19 40%,#ff6f00 100%)', backBorderColor:'#ff8a50', backPattern:'stripes', backPatternColor:'rgba(255,200,80,0.13)', customBackImage:null },
+  { id:'neon', name:'Neon', faceBackground:'#0d0d0d', faceRedColor:'#ff0080', faceBlackColor:'#00ff88', faceBorderColor:'#00ff88', fontFamily:"'Courier New', monospace", backGradient:'linear-gradient(135deg,#050510 0%,#0d0d1a 100%)', backBorderColor:'#00ff88', backPattern:'grid', backPatternColor:'rgba(0,255,136,0.09)', customBackImage:null },
+  { id:'royal', name:'Royal Purple', faceBackground:'#faf5ff', faceRedColor:'#880088', faceBlackColor:'#4a0080', faceBorderColor:'#ce93d8', fontFamily:"'Palatino Linotype', Palatino, 'Book Antiqua', serif", backGradient:'linear-gradient(135deg,#4a148c 0%,#6a1b9a 50%,#38006b 100%)', backBorderColor:'#ce93d8', backPattern:'diamonds', backPatternColor:'rgba(220,170,255,0.14)', customBackImage:null },
+  { id:'minimal', name:'Minimal', faceBackground:'#ffffff', faceRedColor:'#d32f2f', faceBlackColor:'#212121', faceBorderColor:'#bdbdbd', fontFamily:'Arial, Helvetica, sans-serif', backGradient:'linear-gradient(135deg,#e0e0e0 0%,#bdbdbd 100%)', backBorderColor:'#9e9e9e', backPattern:'none', backPatternColor:'transparent', customBackImage:null },
+  { id:'retro', name:'Retro', faceBackground:'#f5e6cc', faceRedColor:'#8b1a1a', faceBlackColor:'#2c1810', faceBorderColor:'#a0785a', fontFamily:"'Times New Roman', Times, serif", backGradient:'linear-gradient(135deg,#6b4226 0%,#8b5e3c 50%,#5c3317 100%)', backBorderColor:'#d2a679', backPattern:'crosshatch', backPatternColor:'rgba(255,220,170,0.12)', customBackImage:null },
+  { id:'cyberpunk', name:'Cyberpunk', faceBackground:'#0a0a1a', faceRedColor:'#ff2d78', faceBlackColor:'#00e5ff', faceBorderColor:'#ff2d78', fontFamily:"'Courier New', monospace", backGradient:'linear-gradient(135deg,#0a0a1a 0%,#1a0a2e 100%)', backBorderColor:'#ff2d78', backPattern:'grid', backPatternColor:'rgba(255,45,120,0.09)', customBackImage:null },
+  { id:'rose', name:'Rose', faceBackground:'#fff0f5', faceRedColor:'#c2185b', faceBlackColor:'#880e4f', faceBorderColor:'#f48fb1', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#c2185b 0%,#e91e8c 50%,#880e4f 100%)', backBorderColor:'#f48fb1', backPattern:'dots', backPatternColor:'rgba(255,180,210,0.18)', customBackImage:null },
+  { id:'arctic', name:'Arctic', faceBackground:'#f0f8ff', faceRedColor:'#1565c0', faceBlackColor:'#0d47a1', faceBorderColor:'#90caf9', fontFamily:"'Trebuchet MS', sans-serif", backGradient:'linear-gradient(135deg,#90caf9 0%,#bbdefb 50%,#42a5f5 100%)', backBorderColor:'#42a5f5', backPattern:'dots', backPatternColor:'rgba(100,180,255,0.2)', customBackImage:null },
+  { id:'obsidian', name:'Obsidian', faceBackground:'#1a1a1a', faceRedColor:'#ff4444', faceBlackColor:'#d4af37', faceBorderColor:'#333333', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#000000 0%,#1a1a1a 100%)', backBorderColor:'#d4af37', backPattern:'diamonds', backPatternColor:'rgba(212,175,55,0.13)', customBackImage:null },
+  { id:'sakura', name:'Sakura', faceBackground:'#fff5f9', faceRedColor:'#d63384', faceBlackColor:'#6f42c1', faceBorderColor:'#ffb3d1', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#f8a5c2 0%,#f368a9 50%,#f8a5c2 100%)', backBorderColor:'#f368a9', backPattern:'dots', backPatternColor:'rgba(255,255,255,0.3)', customBackImage:null },
+  { id:'slate', name:'Slate', faceBackground:'#f8f9fa', faceRedColor:'#dc3545', faceBlackColor:'#343a40', faceBorderColor:'#adb5bd', fontFamily:"'Trebuchet MS', sans-serif", backGradient:'linear-gradient(135deg,#495057 0%,#343a40 100%)', backBorderColor:'#6c757d', backPattern:'stripes', backPatternColor:'rgba(255,255,255,0.07)', customBackImage:null },
+  { id:'halloween', name:'Halloween', faceBackground:'#1a0a00', faceRedColor:'#ff6600', faceBlackColor:'#cc33ff', faceBorderColor:'#ff6600', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#1a0a00 0%,#3d1a00 50%,#0d0020 100%)', backBorderColor:'#ff6600', backPattern:'stars', backPatternColor:'rgba(255,102,0,0.18)', customBackImage:null },
+];
+
+function generatePatternURL(type, color) {
+  if (!type || type === 'none') return 'none';
+  const enc = s => s.replace(/#/g, '%23').replace(/"/g, "'");
+  const svg = (body, w=20, h=20) =>
+    `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>${enc(body)}</svg>")`;
+  switch (type) {
+    case 'diamonds':   return svg(`<polygon points="10,1 19,10 10,19 1,10" fill="${color}"/>`);
+    case 'dots':       return svg(`<circle cx="10" cy="10" r="3.5" fill="${color}"/>`);
+    case 'stripes':    return svg(`<line x1="0" y1="0" x2="10" y2="10" stroke="${color}" stroke-width="1.8"/><line x1="10" y1="0" x2="20" y2="10" stroke="${color}" stroke-width="1.8"/>`);
+    case 'crosshatch': return svg(`<line x1="0" y1="0" x2="20" y2="20" stroke="${color}" stroke-width="1"/><line x1="20" y1="0" x2="0" y2="20" stroke="${color}" stroke-width="1"/>`);
+    case 'grid':       return svg(`<line x1="10" y1="0" x2="10" y2="20" stroke="${color}" stroke-width="0.6"/><line x1="0" y1="10" x2="20" y2="10" stroke="${color}" stroke-width="0.6"/>`);
+    case 'waves':      return svg(`<path d="M0 10 Q5 3 10 10 Q15 17 20 10" stroke="${color}" stroke-width="1.5" fill="none"/>`,20,20);
+    case 'stars':      return svg(`<text x="3" y="15" font-size="14" fill="${color}">✦</text>`);
+    default: return 'none';
+  }
+}
+
+function applyDeckTheme(theme) {
+  let el = document.getElementById('deck-theme-style');
+  if (!el) { el = document.createElement('style'); el.id = 'deck-theme-style'; document.head.appendChild(el); }
+  const backBg = theme.customBackImage
+    ? `url(${theme.customBackImage}) center/cover no-repeat`
+    : theme.backGradient;
+  const pat = generatePatternURL(theme.backPattern, theme.backPatternColor);
+  el.textContent = `:root {
+    --card-face-bg:     ${theme.faceBackground};
+    --card-red:         ${theme.faceRedColor};
+    --card-black:       ${theme.faceBlackColor};
+    --card-face-border: ${theme.faceBorderColor};
+    --card-font:        ${theme.fontFamily};
+    --back-bg:          ${backBg};
+    --back-border:      ${theme.backBorderColor};
+    --back-pattern:     ${pat};
+  }`;
+}
+
+let _savedTheme = null;
+let _pendingTheme = null;
+
+function loadSavedTheme() {
+  try { _savedTheme = JSON.parse(localStorage.getItem(LS_DECK)); } catch(e) {}
+  if (!_savedTheme) _savedTheme = DECK_PRESETS[0];
+  applyDeckTheme(_savedTheme);
+}
+
+function openDeckModal() {
+  _pendingTheme = JSON.parse(JSON.stringify(_savedTheme));
+  applyDeckTheme(_pendingTheme);
+  switchDeckTab('presets');
+  renderPresetGrid();
+  document.getElementById('deck-modal').classList.remove('hidden');
+}
+
+function closeDeckModal(e) {
+  if (e && e.target !== document.getElementById('deck-modal')) return;
+  cancelDeckModal();
+}
+
+function cancelDeckModal() {
+  applyDeckTheme(_savedTheme);
+  document.getElementById('deck-modal').classList.add('hidden');
+}
+
+function saveDeckTheme() {
+  _savedTheme = JSON.parse(JSON.stringify(_pendingTheme));
+  try { localStorage.setItem(LS_DECK, JSON.stringify(_savedTheme)); } catch(e) {}
+  applyDeckTheme(_savedTheme);
+  document.getElementById('deck-modal').classList.add('hidden');
+  // toast is defined later in the file — call it if available
+  if (typeof toast === 'function') toast('Deck style saved!', 'success');
+}
+
+function switchDeckTab(tab) {
+  ['presets','custom'].forEach(t => {
+    document.getElementById(`dtab-${t}`).classList.toggle('active', t === tab);
+    document.getElementById(`deck-tab-${t}`).classList.toggle('hidden', t !== tab);
+  });
+  if (tab === 'custom') syncCustomInputsToTheme(_pendingTheme);
+}
+
+function renderPresetGrid() {
+  const grid = document.getElementById('deck-presets-grid');
+  grid.innerHTML = '';
+  DECK_PRESETS.forEach(preset => {
+    const item = document.createElement('div');
+    item.className = 'deck-preset-item' + (_pendingTheme.id === preset.id ? ' selected' : '');
+    item.onclick = () => selectPreset(preset);
+    const pat = generatePatternURL(preset.backPattern, preset.backPatternColor);
+    const mini = document.createElement('div');
+    mini.className = 'deck-preset-back';
+    mini.style.borderColor = preset.backBorderColor;
+    mini.style.background = preset.backGradient;
+    if (pat !== 'none') {
+      mini.style.backgroundImage = `${pat}, ${preset.backGradient}`;
+      mini.style.backgroundSize = '14px 14px, 100% 100%';
+    }
+    const label = document.createElement('div');
+    label.className = 'deck-preset-name';
+    label.textContent = preset.name;
+    item.appendChild(mini);
+    item.appendChild(label);
+    grid.appendChild(item);
+  });
+}
+
+function selectPreset(preset) {
+  _pendingTheme = JSON.parse(JSON.stringify(preset));
+  applyDeckTheme(_pendingTheme);
+  document.querySelectorAll('.deck-preset-item').forEach((el, i) => {
+    el.classList.toggle('selected', DECK_PRESETS[i]?.id === preset.id);
+  });
+}
+
+function hexFromGradient(grad, which) {
+  const matches = grad.match(/#[0-9a-fA-F]{3,6}/g);
+  if (!matches) return '#000000';
+  return which === 'end' ? matches[matches.length - 1] : matches[0];
+}
+
+function syncCustomInputsToTheme(theme) {
+  document.getElementById('cust-back-c1').value = hexFromGradient(theme.backGradient, 'start');
+  document.getElementById('cust-back-c2').value = hexFromGradient(theme.backGradient, 'end');
+  const bbc = theme.backBorderColor;
+  document.getElementById('cust-back-border').value = bbc.startsWith('#') ? bbc : '#2a6aaa';
+  document.getElementById('cust-back-pattern').value = theme.backPattern || 'none';
+  const pcMatch = theme.backPatternColor?.match(/#[0-9a-fA-F]{3,6}/);
+  document.getElementById('cust-pattern-color').value = pcMatch ? pcMatch[0] : '#ffffff';
+  const fbg = theme.faceBackground;
+  document.getElementById('cust-face-bg').value = fbg.startsWith('#') ? fbg : '#fffef5';
+  document.getElementById('cust-face-red').value = theme.faceRedColor;
+  document.getElementById('cust-face-black').value = theme.faceBlackColor;
+  const fbc = theme.faceBorderColor;
+  document.getElementById('cust-face-border').value = fbc.startsWith('#') ? fbc : '#cccccc';
+  const fontSel = document.getElementById('cust-font');
+  const match = [...fontSel.options].find(o => o.value === theme.fontFamily);
+  fontSel.value = match ? match.value : fontSel.options[0].value;
+  const thumb = document.getElementById('cust-back-thumb');
+  if (theme.customBackImage) { thumb.src = theme.customBackImage; thumb.style.display = 'block'; }
+  else { thumb.style.display = 'none'; }
+}
+
+function updateCustomTheme() {
+  const c1 = document.getElementById('cust-back-c1').value;
+  const c2 = document.getElementById('cust-back-c2').value;
+  const pHex = document.getElementById('cust-pattern-color').value;
+  _pendingTheme = {
+    ..._pendingTheme,
+    id: 'custom', name: 'Custom',
+    faceBackground:   document.getElementById('cust-face-bg').value,
+    faceRedColor:     document.getElementById('cust-face-red').value,
+    faceBlackColor:   document.getElementById('cust-face-black').value,
+    faceBorderColor:  document.getElementById('cust-face-border').value,
+    fontFamily:       document.getElementById('cust-font').value,
+    backGradient:     `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`,
+    backBorderColor:  document.getElementById('cust-back-border').value,
+    backPattern:      document.getElementById('cust-back-pattern').value,
+    backPatternColor: pHex + '33',
+  };
+  applyDeckTheme(_pendingTheme);
+  document.querySelectorAll('.deck-preset-item').forEach(el => el.classList.remove('selected'));
+}
+
+function handleBackImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { alert('Image must be under 2 MB'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    _pendingTheme = { ..._pendingTheme, id: 'custom', name: 'Custom', customBackImage: ev.target.result };
+    const thumb = document.getElementById('cust-back-thumb');
+    thumb.src = ev.target.result;
+    thumb.style.display = 'block';
+    applyDeckTheme(_pendingTheme);
+    document.querySelectorAll('.deck-preset-item').forEach(el => el.classList.remove('selected'));
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearBackImage() {
+  _pendingTheme = { ..._pendingTheme, customBackImage: null };
+  document.getElementById('cust-back-thumb').style.display = 'none';
+  document.getElementById('cust-back-image').value = '';
+  applyDeckTheme(_pendingTheme);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // INIT — URL-based auto-join
 // ═══════════════════════════════════════════════════════════════════════════════
 
 window.addEventListener('load', () => {
+  loadSavedTheme();
   initLocalAuth();
   const params = new URLSearchParams(window.location.search);
   const joinCode = params.get('join');
