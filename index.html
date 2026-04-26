@@ -707,6 +707,87 @@ body {
 }
 .deck-preview-label { font-size: 0.7rem; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.1em; margin-right: 4px; }
 
+/* ── QoL: Icon buttons in header ──────────────────────────────────────────── */
+.btn-icon {
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px; color: rgba(255,255,255,0.65); width: 30px; height: 30px;
+  cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center;
+  justify-content: center; transition: all 0.15s; flex-shrink: 0;
+}
+.btn-icon:hover { background: rgba(255,255,255,0.14); color: #fff; }
+.game-header-right { display: flex; align-items: center; gap: 8px; }
+
+/* ── QoL: Turn timer ──────────────────────────────────────────────────────── */
+.turn-timer-wrap { display: none; align-items: center; gap: 8px; padding: 3px 16px; background: rgba(0,0,0,0.25); border-bottom: 1px solid rgba(255,255,255,0.05); }
+.turn-timer-track { flex: 1; height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+.turn-timer-fill { height: 100%; width: 100%; border-radius: 3px; background: #4caf50; transition: width 0.9s linear, background 0.9s; }
+.turn-timer-text { font-size: 0.72rem; color: rgba(255,255,255,0.5); min-width: 26px; text-align: right; }
+
+/* ── QoL: Turn-badge flash ─────────────────────────────────────────────────── */
+@keyframes turnFlash {
+  0%,100% { box-shadow: 0 0 0 0 transparent; }
+  40%      { box-shadow: 0 0 0 6px rgba(255,215,0,0.45), 0 0 18px rgba(255,215,0,0.25); }
+}
+.turn-flash { animation: turnFlash 0.9s ease; }
+
+/* ── QoL: Settings panel ───────────────────────────────────────────────────── */
+.settings-panel {
+  position: fixed; top: 54px; right: 12px; z-index: 1100;
+  background: #1a2a1a; border: 1px solid rgba(212,160,23,0.4);
+  border-radius: 10px; padding: 14px 16px; min-width: 190px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.55);
+}
+.settings-title { font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-bright); margin-bottom: 10px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-size: 0.82rem; color: rgba(255,255,255,0.7); }
+.settings-row select { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: #fff; padding: 3px 6px; font-size: 0.78rem; font-family: inherit; cursor: pointer; }
+.settings-toggle { border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.78rem; color: #fff; cursor: pointer; font-family: inherit; font-weight: bold; min-width: 36px; }
+.settings-toggle.on  { background: #2e7d32; }
+.settings-toggle.off { background: #8b1a1a; }
+
+/* ── QoL: Hint button glow when 21 ready ──────────────────────────────────── */
+#btn-claim.can-claim { animation: claimPulse 1s ease infinite; }
+@keyframes claimPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(56,142,60,0); }
+  50%      { box-shadow: 0 0 0 6px rgba(56,142,60,0.5); }
+}
+
+/* ── QoL: Hand total ──────────────────────────────────────────────────────── */
+.hand-total { font-size: 0.72rem; color: rgba(255,255,255,0.35); padding: 2px 0 4px; min-height: 18px; letter-spacing: 0.05em; }
+
+/* ── QoL: Chat panel ──────────────────────────────────────────────────────── */
+.chat-panel { border-top: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.18); flex-shrink: 0; }
+.chat-header { padding: 5px 12px; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.35); cursor: pointer; display: flex; justify-content: space-between; user-select: none; }
+.chat-header:hover { color: rgba(255,255,255,0.65); }
+.chat-log { height: 70px; overflow-y: auto; padding: 3px 10px; scrollbar-width: thin; }
+.chat-msg { font-size: 0.76rem; color: rgba(255,255,255,0.72); margin: 2px 0; word-break: break-word; }
+.chat-msg.mine { color: #e0c040; }
+.chat-name { opacity: 0.6; font-size: 0.7rem; }
+.chat-input-row { display: flex; gap: 5px; padding: 5px 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+.chat-input-row input { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 4px; color: #fff; padding: 4px 7px; font-size: 0.76rem; font-family: inherit; }
+.chat-input-row input:focus { outline: none; border-color: rgba(212,160,23,0.4); }
+
+/* ── QoL: Emoji reactions ─────────────────────────────────────────────────── */
+.reaction-bar { display: flex; align-items: center; gap: 5px; padding: 5px 12px; flex-wrap: wrap; }
+.reaction-label { font-size: 0.65rem; color: rgba(255,255,255,0.28); text-transform: uppercase; letter-spacing: 0.1em; margin-right: 2px; }
+.reaction-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; font-size: 1rem; padding: 3px 7px; cursor: pointer; transition: all 0.12s; line-height: 1; }
+.reaction-btn:hover { background: rgba(255,255,255,0.14); transform: scale(1.25); }
+.reaction-float { position: fixed; font-size: 2.2rem; pointer-events: none; z-index: 9999; animation: floatUp 2s ease-out forwards; transform-origin: center bottom; }
+@keyframes floatUp { 0% { opacity:1; transform: translateY(0) scale(0.8); } 20% { transform: translateY(-20px) scale(1.2); } 100% { opacity:0; transform: translateY(-100px) scale(0.9); } }
+
+/* ── QoL: Confetti ────────────────────────────────────────────────────────── */
+.confetti-particle { position: fixed; top: -15px; pointer-events: none; z-index: 9998; animation: confettiFall linear forwards; }
+@keyframes confettiFall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+/* ── QoL: Rules modal ─────────────────────────────────────────────────────── */
+.rules-text p  { margin: 5px 0; font-size: 0.83rem; color: rgba(255,255,255,0.82); }
+.rules-text ul { margin: 3px 0 8px 18px; }
+.rules-text li { font-size: 0.81rem; color: rgba(255,255,255,0.78); margin: 4px 0; }
+.rules-text strong { color: #fff; }
+.rules-text kbd { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.22); border-radius: 3px; padding: 1px 5px; font-size: 0.75rem; font-family: monospace; }
+
+/* ── QoL: Auto-ready countdown ────────────────────────────────────────────── */
+.auto-ready-text { font-size: 0.72rem; color: rgba(255,255,255,0.3); margin-top: 4px; }
+
 /* ════════════════════════════════════════════════════════════════════════════
    MOBILE LAYOUT
    ════════════════════════════════════════════════════════════════════════════ */
@@ -1402,10 +1483,19 @@ body {
       <div class="game-header-center" id="header-scores"></div>
       <div class="game-header-right">
         <span class="turn-badge" id="turn-badge">—</span>
+        <button class="btn-icon" title="Rules (R)" onclick="openRulesModal()">❓</button>
+        <button class="btn-icon" title="Settings" onclick="toggleSettings()">⚙</button>
       </div>
     </div>
 
-    <div class="opponents-row" id="opponents-row"></div>
+      <!-- Turn timer -->
+      <div id="turn-timer-wrap" class="turn-timer-wrap">
+        <div class="turn-timer-track"><div id="turn-timer-fill" class="turn-timer-fill"></div></div>
+        <span id="turn-timer-text" class="turn-timer-text"></span>
+      </div>
+
+      <!-- Opponents row -->
+      <div class="opponents-row" id="opponents-row"></div>
 
     <div class="table-center">
       <div class="deck-zone">
@@ -1431,7 +1521,21 @@ body {
       <div class="hand-cards" id="hand-cards"></div>
     </div>
 
-    <div class="action-panel" id="action-panel">
+      <div class="hand-total" id="hand-total"></div>
+
+      <!-- Reactions -->
+      <div class="reaction-bar">
+        <span class="reaction-label">React</span>
+        <button class="reaction-btn" onclick="sendReaction('😄')">😄</button>
+        <button class="reaction-btn" onclick="sendReaction('🔥')">🔥</button>
+        <button class="reaction-btn" onclick="sendReaction('👎')">👎</button>
+        <button class="reaction-btn" onclick="sendReaction('😮')">😮</button>
+        <button class="reaction-btn" onclick="sendReaction('🎉')">🎉</button>
+        <button class="reaction-btn" onclick="sendReaction('💀')">💀</button>
+      </div>
+
+      <!-- Action panel -->
+      <div class="action-panel" id="action-panel">
       <div id="panel-normal">
         <div class="sel-info" id="sel-info">Select cards from your hand to make 21</div>
         <div class="action-btns">
@@ -1439,6 +1543,7 @@ body {
           <button class="btn btn-amber"   id="btn-swap-mode" onclick="enterSwapMode()">Swap with Carcass</button>
           <button class="btn btn-replace" id="btn-replace"   onclick="replaceHand()">Replace Hand 🔄</button>
           <button class="btn btn-blue"    id="btn-end-turn"  onclick="endTurn()">End Turn &amp; Draw</button>
+          <button class="btn btn-ghost"   id="btn-hint"      onclick="hintPlay()" title="Find a 21 (H)">💡 Hint</button>
         </div>
       </div>
       <div id="panel-swap" class="hidden">
@@ -1453,6 +1558,19 @@ body {
 
     <div class="game-log" id="game-log"></div>
 
+      <!-- Chat -->
+      <div class="chat-panel" id="chat-panel">
+        <div class="chat-header" onclick="toggleChat()">
+          💬 Chat <span id="chat-toggle-icon">▼</span>
+        </div>
+        <div class="chat-log" id="chat-log"></div>
+        <div class="chat-input-row" id="chat-input-row">
+          <input id="chat-input" type="text" placeholder="Message…" maxlength="80"
+                 onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-ghost" onclick="sendChat()" style="font-size:0.74rem;padding:4px 10px">Send</button>
+        </div>
+      </div>
+
   </div>
 </div>
 
@@ -1464,7 +1582,8 @@ body {
     <div class="ready-area">
       <button class="btn btn-primary" id="btn-ready" onclick="readyNextRound()">Ready for Next Round</button>
       <p class="ready-status" id="ready-status"></p>
-    </div>
+        <p class="auto-ready-text" id="auto-ready-text"></p>
+      </div>
   </div>
 </div>
 
@@ -1595,7 +1714,53 @@ body {
     </div>
   </div>
 
-<!-- Toast container -->
+  <!-- Settings Panel -->
+  <div id="settings-panel" class="settings-panel hidden">
+    <div class="settings-title">Settings</div>
+    <div class="settings-row">
+      <label>Sound</label>
+      <button id="setting-sound" class="settings-toggle on" onclick="toggleSoundSetting()">ON</button>
+    </div>
+    <div class="settings-row">
+      <label>Turn Timer</label>
+      <select id="setting-timer" onchange="changeSetting('timerDuration', +this.value)">
+        <option value="0">Off</option>
+        <option value="30">30s</option>
+        <option value="60">60s</option>
+        <option value="90">90s</option>
+      </select>
+    </div>
+    <button class="btn btn-ghost" onclick="toggleSettings()" style="margin-top:8px;width:100%;font-size:0.78rem">Close</button>
+  </div>
+
+  <!-- Rules Modal -->
+  <div id="rules-modal" class="modal-overlay hidden" onclick="closeRulesModal(event)">
+    <div class="modal-box" style="max-width:480px;max-height:82vh;overflow-y:auto;text-align:left">
+      <h2 style="color:var(--gold-bright);margin-bottom:12px">📖 How to Play</h2>
+      <div class="rules-text">
+        <p><strong>Goal:</strong> Be the first to reach 2× (number of players) points.</p>
+        <p><strong>Setup:</strong> Each player holds 5 cards. 3 shared cards form the <em>Carcass</em>.</p>
+        <p><strong>On your turn you may:</strong></p>
+        <ul>
+          <li>Select 2+ hand cards totalling exactly <strong>21</strong> → click <em>Claim 21!</em></li>
+          <li><strong>Swap</strong> any cards between your hand and the Carcass (unlimited per turn).</li>
+          <li><strong>Replace Hand</strong> — discard all 5, draw 5 fresh (first action only, only if you can't make 21).</li>
+          <li>Click <em>End Turn &amp; Draw</em> to draw back up to 5 cards and pass.</li>
+        </ul>
+        <p><strong>Card values:</strong> A = 1 or 11 &nbsp;|&nbsp; J/Q/K = 10 &nbsp;|&nbsp; 2–10 = face value</p>
+        <p><strong>Deck empty:</strong> Pick any card from the Carcass to draw instead.</p>
+        <p><strong>Stalemate:</strong> If nobody claims 21 through a full cycle after the deck is gone, round ends.</p>
+        <p><strong>Scoring:</strong> Player with most sets gets n−1 pts, next n−2, etc. Full tie = nobody scores, restart.</p>
+        <p><strong>First turn:</strong> Each player picks a face-down card — highest unique value goes first.</p>
+        <p style="margin-top:10px;color:rgba(255,255,255,0.5)"><strong>Keyboard shortcuts:</strong><br>
+          <kbd>Enter</kbd> Claim 21 &nbsp; <kbd>H</kbd> Hint &nbsp; <kbd>E</kbd> End turn &nbsp; <kbd>Esc</kbd> Cancel/deselect &nbsp; <kbd>R</kbd> Rules
+        </p>
+      </div>
+      <button class="btn btn-primary" onclick="closeRulesModal()" style="margin-top:14px">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
 <div id="toasts"></div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -2886,6 +3051,14 @@ function handleGuestMessage(fromPeerId, data) {
     case 'game-action':
       handleAction(fromPeerId, data.action);
       break;
+    case 'chat':
+      broadcastToGuests({ type: 'chat', name: data.name, text: data.text });
+      displayChatMsg(data.name, data.text, data.name === myName);
+      break;
+    case 'reaction':
+      broadcastToGuests({ type: 'reaction', name: data.name, emoji: data.emoji });
+      displayReaction(data.name, data.emoji);
+      break;
     case 'ready-next-round': {
       if (room.phase !== 'round_end') return;
       const player = room.players.find(p => p.id === fromPeerId);
@@ -3067,6 +3240,12 @@ function attachAsGuest(conn, hostPeerId) {
         break;
       case 'player-left':
         toast(`${data.name} left the game`);
+        break;
+      case 'chat':
+        displayChatMsg(data.name, data.text, data.name === myName);
+        break;
+      case 'reaction':
+        displayReaction(data.name, data.emoji);
         break;
     }
   });
@@ -3357,6 +3536,7 @@ function renderGame(state) {
 
   $('turn-badge').textContent = isMyTurn ? '⭐ Your Turn' : `${current?.name}'s Turn`;
   $('turn-badge').style.borderColor = isMyTurn ? '#ffd700' : 'rgba(255,255,255,0.2)';
+  onTurnChange(isMyTurn);
 
   // Opponents
   const oppsEl = $('opponents-row');
@@ -3392,6 +3572,7 @@ function renderGame(state) {
   renderYourSets(me.sets || []);
   renderHand(me.hand || []);
   renderActionPanel(state.canReplace ?? false);
+  updateHandTotal(me?.hand || []);
 
   const logEl = $('game-log');
   logEl.innerHTML = '';
@@ -3462,7 +3643,9 @@ function renderActionPanel(canReplace) {
       if (canMake21Client(handCards)) infoText += ' ✓';
     }
     $('sel-info').textContent = infoText;
-    $('btn-claim').disabled = !isMyTurn || !canMake21Client(handCards);
+    const has21 = canMake21Client(handCards);
+    $('btn-claim').disabled = !isMyTurn || !has21;
+    $('btn-claim').classList.toggle('can-claim', isMyTurn && has21);
     $('btn-swap-mode').disabled = !isMyTurn || (gameState?.hasActed ?? false);
     const replBtn = $('btn-replace');
     replBtn.disabled = !isMyTurn || !canReplace;
@@ -3482,8 +3665,8 @@ function renderActionPanel(canReplace) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function toggleHandSelect(id, el) {
-  if (selectedHandIds.has(id)) { selectedHandIds.delete(id); el.classList.remove('selected'); el.style.transform = ''; }
-  else { selectedHandIds.add(id); el.classList.add('selected'); }
+  if (selectedHandIds.has(id)) { playSound('deselect'); selectedHandIds.delete(id); el.classList.remove('selected'); el.style.transform = ''; }
+  else { playSound('select'); selectedHandIds.add(id); el.classList.add('selected'); }
   renderActionPanel(gameState?.canReplace ?? false);
 }
 
@@ -3505,12 +3688,14 @@ function toggleGive(id, el) {
 
 function claimSet() {
   if (!isMyTurn || selectedHandIds.size < 2) return;
+  playSound('claim');
   sendAction({ type: 'claim-set', cardIds: [...selectedHandIds] });
   selectedHandIds.clear();
 }
 
 function enterSwapMode() {
   if (!isMyTurn || (gameState?.hasActed ?? false)) return;
+  playSound('swap');
   swapMode = true;
   takeIds.clear(); giveIds.clear(); selectedHandIds.clear();
   if (gameState) renderGame(gameState);
@@ -3563,6 +3748,7 @@ function renderRoundEnd(state) {
   $('round-results').innerHTML = html;
   $('ready-status').textContent = '';
   $('btn-ready').disabled = false;
+  startAutoReady();
   showScreen('screen-round-end');
 }
 
@@ -3582,6 +3768,7 @@ function renderGameEnd(state) {
   });
   html += '</tbody></table>';
   $('final-scores').innerHTML = html;
+  launchConfetti();
   showScreen('screen-game-end');
   // Save stats for signed-in players (non-AI games only)
   const me = state.players.find(p => p.id === myId);
@@ -3592,6 +3779,7 @@ function renderGameEnd(state) {
 }
 
 function readyNextRound() {
+  clearAutoReady();
   $('btn-ready').disabled = true;
   $('ready-status').textContent = 'Waiting for others…';
   if (isHost) {
@@ -3638,6 +3826,255 @@ function onGameState(state) {
       break;
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ─── QoL Systems ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Settings ─────────────────────────────────────────────────────────────────
+const LS_SETTINGS = 'carcass-settings';
+let settings = { sound: true, timerDuration: 0 };
+function loadSettings() {
+  try { Object.assign(settings, JSON.parse(localStorage.getItem(LS_SETTINGS)) || {}); } catch(e) {}
+  syncSettingsUI();
+}
+function saveSettings() { try { localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); } catch(e) {} }
+function syncSettingsUI() {
+  const snd = document.getElementById('setting-sound');
+  if (snd) { snd.textContent = settings.sound ? 'ON' : 'OFF'; snd.className = 'settings-toggle ' + (settings.sound ? 'on' : 'off'); }
+  const tmr = document.getElementById('setting-timer');
+  if (tmr) tmr.value = String(settings.timerDuration);
+}
+function toggleSettings() {
+  const p = document.getElementById('settings-panel');
+  if (p) { p.classList.toggle('hidden'); syncSettingsUI(); }
+}
+function toggleSoundSetting() { settings.sound = !settings.sound; saveSettings(); syncSettingsUI(); }
+function changeSetting(key, val) { settings[key] = val; saveSettings(); syncSettingsUI(); if (key === 'timerDuration') { clearTurnTimer(); hideTurnTimer(); } }
+
+// ── Sound Engine ──────────────────────────────────────────────────────────────
+let _audioCtx = null;
+function _getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+function playSound(type) {
+  if (!settings.sound) return;
+  try {
+    const ctx = _getAudioCtx();
+    const note = (freq, start, dur, vol = 0.12, shape = 'sine') => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = shape; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(vol, ctx.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur + 0.05);
+    };
+    switch (type) {
+      case 'select':   note(660, 0, 0.08, 0.07); break;
+      case 'deselect': note(400, 0, 0.07, 0.06); break;
+      case 'claim':    note(523,0,.12,.18,'triangle'); note(659,.1,.12,.18,'triangle'); note(784,.2,.3,.2,'triangle'); break;
+      case 'swap':     note(480,0,.14,.1); note(600,.1,.18,.1); break;
+      case 'yourturn': note(440,0,.12,.18); note(554,.12,.12,.18); note(659,.24,.38,.22); break;
+      case 'win':      [523,659,784,1047].forEach((f,i) => note(f, i*.12, .5, .2, 'triangle')); break;
+      case 'deal':     note(300,0,.06,.06,'sawtooth'); break;
+    }
+  } catch(e) {}
+}
+
+// ── Your-turn notification ────────────────────────────────────────────────────
+let _wasMyTurn = false;
+function onTurnChange(nowMyTurn) {
+  if (nowMyTurn && !_wasMyTurn) {
+    document.title = '⭐ YOUR TURN — Carcass';
+    playSound('yourturn');
+    const badge = document.getElementById('turn-badge');
+    if (badge) { badge.classList.remove('turn-flash'); void badge.offsetWidth; badge.classList.add('turn-flash'); }
+    if ('Notification' in window && Notification.permission === 'granted' && document.visibilityState !== 'visible')
+      new Notification('Carcass', { body: "It's your turn!" });
+    startTurnTimer();
+  } else if (!nowMyTurn && _wasMyTurn) {
+    document.title = 'Carcass — The 21 Card Game';
+    clearTurnTimer(); hideTurnTimer();
+  }
+  _wasMyTurn = nowMyTurn;
+}
+
+// ── Turn Timer ────────────────────────────────────────────────────────────────
+let _timerInterval = null;
+let _timerLeft = 0;
+function startTurnTimer() {
+  clearTurnTimer();
+  const dur = settings.timerDuration;
+  if (!dur || dur <= 0) { hideTurnTimer(); return; }
+  _timerLeft = dur;
+  _renderTimer(_timerLeft, dur);
+  _timerInterval = setInterval(() => {
+    _timerLeft--;
+    _renderTimer(_timerLeft, dur);
+    if (_timerLeft <= 0) { clearTurnTimer(); hideTurnTimer(); endTurn(); }
+  }, 1000);
+}
+function clearTurnTimer() { if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; } }
+function hideTurnTimer() { const w = document.getElementById('turn-timer-wrap'); if (w) w.style.display = 'none'; }
+function _renderTimer(left, total) {
+  const wrap = document.getElementById('turn-timer-wrap');
+  const fill = document.getElementById('turn-timer-fill');
+  const text = document.getElementById('turn-timer-text');
+  if (!wrap) return;
+  wrap.style.display = 'flex';
+  const pct = Math.max(0, left / total * 100);
+  if (fill) { fill.style.width = pct + '%'; fill.style.background = pct > 40 ? '#4caf50' : pct > 18 ? '#ff9800' : '#f44336'; }
+  if (text) text.textContent = left + 's';
+}
+
+// ── Auto-ready countdown ──────────────────────────────────────────────────────
+let _autoReadyTimer = null;
+function startAutoReady() {
+  clearAutoReady();
+  let secs = 45;
+  const el = document.getElementById('auto-ready-text');
+  if (el) el.textContent = `Auto-ready in ${secs}s`;
+  _autoReadyTimer = setInterval(() => {
+    secs--;
+    if (el) el.textContent = secs > 0 ? `Auto-ready in ${secs}s` : '';
+    if (secs <= 0) { clearAutoReady(); readyNextRound(); }
+  }, 1000);
+}
+function clearAutoReady() {
+  if (_autoReadyTimer) { clearInterval(_autoReadyTimer); _autoReadyTimer = null; }
+  const el = document.getElementById('auto-ready-text'); if (el) el.textContent = '';
+}
+
+// ── Confetti ──────────────────────────────────────────────────────────────────
+function launchConfetti() {
+  const cols = ['#ffd700','#ff4444','#44dd88','#5599ff','#ff88ff','#ff8800','#ffffff'];
+  for (let i = 0; i < 90; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-particle';
+    const sz = Math.random() * 10 + 5;
+    el.style.cssText = `left:${Math.random()*100}vw;width:${sz}px;height:${sz}px;` +
+      `background:${cols[Math.floor(Math.random()*cols.length)]};` +
+      `animation-duration:${Math.random()*2+2}s;animation-delay:${Math.random()*0.8}s;` +
+      `border-radius:${Math.random()>.5?'50%':'2px'};`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+  }
+  playSound('win');
+}
+
+// ── Hint (auto-select 21) ─────────────────────────────────────────────────────
+function hintPlay() {
+  if (!isMyTurn || !gameState) { toast('Wait for your turn', 'info', 1500); return; }
+  const me = gameState.players.find(p => p.id === myId);
+  const hand = (me?.hand || []).filter(Boolean);
+  for (let size = 2; size <= hand.length; size++) {
+    const combo = _findCombo21(hand, size);
+    if (combo) {
+      selectedHandIds.clear();
+      combo.forEach(c => selectedHandIds.add(c.id));
+      renderGame(gameState);
+      playSound('select');
+      toast('Found a 21 — hit Claim!', 'success', 2000);
+      return;
+    }
+  }
+  toast('No 21 in your hand — try swapping!', 'info');
+}
+function _findCombo21(cards, size) {
+  let found = null;
+  function bt(start, chosen) {
+    if (found) return;
+    if (chosen.length === size) { if (canMake21(chosen)) found = [...chosen]; return; }
+    for (let i = start; i < cards.length && !found; i++) { chosen.push(cards[i]); bt(i+1, chosen); chosen.pop(); }
+  }
+  bt(0, []);
+  return found;
+}
+
+// ── Hand total ────────────────────────────────────────────────────────────────
+function updateHandTotal(hand) {
+  const el = document.getElementById('hand-total');
+  if (!el) return;
+  if (!hand || hand.length === 0) { el.textContent = ''; return; }
+  el.textContent = 'Hand: ' + selectionSum(hand.filter(Boolean));
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+let _chatOpen = true;
+function toggleChat() {
+  _chatOpen = !_chatOpen;
+  const log = document.getElementById('chat-log');
+  const row = document.getElementById('chat-input-row');
+  const icon = document.getElementById('chat-toggle-icon');
+  if (log) log.style.display = _chatOpen ? '' : 'none';
+  if (row) row.style.display = _chatOpen ? '' : 'none';
+  if (icon) icon.textContent = _chatOpen ? '▼' : '▲';
+}
+function sendChat() {
+  const inp = document.getElementById('chat-input');
+  const text = inp?.value.trim();
+  if (!text) return;
+  inp.value = '';
+  const msg = { type: 'chat', name: myName, text };
+  displayChatMsg(myName, text, true);
+  if (isHost) broadcastToGuests(msg);
+  else if (hostConn?.open) hostConn.send(msg);
+}
+function displayChatMsg(name, text, isMe) {
+  const log = document.getElementById('chat-log');
+  if (!log) return;
+  const d = document.createElement('div');
+  d.className = 'chat-msg' + (isMe ? ' mine' : '');
+  d.innerHTML = `<span class="chat-name">${name}: </span>${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}`;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+  if (!_chatOpen) toggleChat();
+}
+
+// ── Emoji Reactions ───────────────────────────────────────────────────────────
+function sendReaction(emoji) {
+  const msg = { type: 'reaction', name: myName, emoji };
+  displayReaction(myName, emoji);
+  if (isHost) broadcastToGuests(msg);
+  else if (hostConn?.open) hostConn.send(msg);
+}
+function displayReaction(name, emoji) {
+  displayChatMsg(name, emoji, name === myName);
+  const el = document.createElement('div');
+  el.className = 'reaction-float';
+  el.textContent = emoji;
+  const slots = [...document.querySelectorAll('.opponent-slot .opp-name')];
+  const slot = slots.find(s => s.textContent.includes(name));
+  const target = slot?.closest('.opponent-slot') || document.getElementById('action-panel');
+  const rect = target ? target.getBoundingClientRect() : { left: window.innerWidth/2 - 20, top: window.innerHeight/2, width: 40, height: 0 };
+  el.style.left = (rect.left + rect.width/2 - 16) + 'px';
+  el.style.top  = rect.top + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2200);
+}
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  const active = document.querySelector('.screen.active')?.id;
+  if (active === 'screen-game') {
+    if (e.key === 'Enter' && !document.getElementById('btn-claim')?.disabled) claimSet();
+    else if (e.key === 'Escape') { if (swapMode) cancelSwapMode(); else { selectedHandIds.clear(); renderActionPanel(gameState?.canReplace ?? false); } }
+    else if (e.key === 'h' || e.key === 'H') hintPlay();
+    else if (e.key === 'e' || e.key === 'E') { if (!document.getElementById('btn-end-turn')?.disabled) endTurn(); }
+  }
+  if (e.key === 'r' || e.key === 'R') {
+    if (!document.getElementById('rules-modal')?.classList.contains('hidden')) closeRulesModal();
+    else openRulesModal();
+  }
+});
+
+// ── Rules Modal ───────────────────────────────────────────────────────────────
+function openRulesModal()  { document.getElementById('rules-modal')?.classList.remove('hidden'); }
+function closeRulesModal(e) { if (!e || e.target === document.getElementById('rules-modal')) document.getElementById('rules-modal')?.classList.add('hidden'); }
 
 // ─── Deck Theme System ────────────────────────────────────────────────────────
 const LS_DECK = 'carcass-deck-theme';
@@ -3833,6 +4270,8 @@ function clearBackImage() {
 
 window.addEventListener('load', () => {
   loadSavedTheme();
+  loadSettings();
+  if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
   initLocalAuth();
   const params = new URLSearchParams(window.location.search);
   const joinCode = params.get('join');
