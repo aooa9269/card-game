@@ -578,9 +578,23 @@ socket.on('game-state', (state) => {
     swapMode = false;
     showScreen('screen-game');
     renderGame(state);
+    // Refresh mod stats panel if open
+    if (modPanelOpen) renderModStatsPanel(state);
+    // Trigger sim step if active and it's our turn
+    if (simActive && isMyTurn) scheduleSimStep();
 
   } else if (state.phase === 'round_end') {
     renderRoundEnd(state);
+    // Sim auto-ready for next round
+    if (simActive && simType === 'rounds') {
+      simRemaining--;
+      updateSimStatus();
+      if (simRemaining > 0) {
+        setTimeout(readyNextRound, simSpeed());
+      } else {
+        stopSim();
+      }
+    }
 
   } else if (state.phase === 'game_end') {
     renderGameEnd(state);
@@ -625,6 +639,162 @@ function cycleTheme() {
 
 // Apply saved theme on load
 applyTheme(currentTheme);
+
+// ─── Sim AI Helpers ───────────────────────────────────────────────────────────
+function simFindBestClaim(hand) {
+  const n = hand.length;
+  for (let mask = 3; mask < (1 << n); mask++) {
+    const subset = [];
+    for (let i = 0; i < n; i++) if (mask & (1 << i)) subset.push(hand[i]);
+    if (subset.length >= 2 && canMake21(subset)) return subset.map(c => c.id);
+  }
+  return null;
+}
+
+function simFindBestSwap(hand, carcass) {
+  if (!carcass.length || !hand.length) return null;
+  // 1-for-1: find swap that enables a 21 claim
+  for (const cCard of carcass) {
+    for (const hCard of hand) {
+      const newHand = [...hand.filter(c => c.id !== hCard.id), cCard];
+      if (simFindBestClaim(newHand)) return { takeIds: [cCard.id], giveIds: [hCard.id] };
+    }
+  }
+  // 2-for-2
+  for (let i = 0; i < carcass.length - 1; i++) {
+    for (let j = i + 1; j < carcass.length; j++) {
+      for (let a = 0; a < hand.length - 1; a++) {
+        for (let b = a + 1; b < hand.length; b++) {
+          const newHand = [...hand.filter(c => c.id !== hand[a].id && c.id !== hand[b].id), carcass[i], carcass[j]];
+          if (simFindBestClaim(newHand)) return { takeIds: [carcass[i].id, carcass[j].id], giveIds: [hand[a].id, hand[b].id] };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// ─── Sim Mode ─────────────────────────────────────────────────────────────────
+let simActive = false;
+let simType = 'turns';
+let simRemaining = 0;
+let simStepScheduled = false;
+
+function simSpeed() { return parseInt($('sim-speed-sel')?.value ?? 700); }
+
+function updateSimStatus() {
+  const typeLabel = { turns: 'turn', moves: 'move', rounds: 'round' }[simType] || simType;
+  const plural = simRemaining !== 1 ? 's' : '';
+  $('sim-status-text').textContent = `${simRemaining} ${typeLabel}${plural} left`;
+}
+
+function setSimType(type) {
+  simType = type;
+  document.querySelectorAll('.sim-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === type));
+}
+
+function startSim() {
+  const count = Math.max(1, parseInt($('sim-count')?.value) || 5);
+  simRemaining = count;
+  simActive = true;
+  $('sim-btn-row').classList.add('hidden');
+  $('sim-running-row').classList.remove('hidden');
+  updateSimStatus();
+  toast(`Sim started: ${count} ${simType}`, 'info', 2000);
+  if (isMyTurn && gameState?.phase === 'playing') scheduleSimStep();
+}
+
+function stopSim() {
+  simActive = false;
+  simStepScheduled = false;
+  $('sim-btn-row').classList.remove('hidden');
+  $('sim-running-row').classList.add('hidden');
+  toast('Sim stopped', 'info', 1500);
+}
+
+function scheduleSimStep() {
+  if (!simActive || simStepScheduled) return;
+  simStepScheduled = true;
+  setTimeout(doSimStep, simSpeed());
+}
+
+function doSimStep() {
+  simStepScheduled = false;
+  if (!simActive || simRemaining <= 0) { stopSim(); return; }
+  if (!gameState || gameState.phase !== 'playing' || !isMyTurn) return;
+
+  const me = gameState.players.find(p => p.id === myId);
+  const hand = (me?.hand || []).filter(Boolean);
+
+  // 1. Claim any 21 in current hand
+  const claimIds = simFindBestClaim(hand);
+  if (claimIds) {
+    selectedHandIds.clear();
+    socket.emit('game-action', { type: 'claim-set', cardIds: claimIds });
+    if (simType === 'moves') { simRemaining--; updateSimStatus(); }
+    return; // next step fires from game-state update
+  }
+
+  // 2. Swap if it would enable a 21
+  if (!gameState.hasActed && (gameState.carcass || []).length > 0) {
+    const swap = simFindBestSwap(hand, gameState.carcass);
+    if (swap) {
+      swapMode = false; takeIds.clear(); giveIds.clear();
+      socket.emit('game-action', { type: 'swap-carcass', takeIds: swap.takeIds, giveIds: swap.giveIds });
+      if (simType === 'moves') { simRemaining--; updateSimStatus(); }
+      return;
+    }
+  }
+
+  // 3. End turn
+  socket.emit('game-action', { type: 'end-turn' });
+  swapMode = false; takeIds.clear(); giveIds.clear(); selectedHandIds.clear();
+  if (simType === 'turns' || simType === 'moves') {
+    simRemaining--;
+    updateSimStatus();
+  }
+  if (simRemaining <= 0) stopSim();
+}
+
+// ─── Mod Panel ────────────────────────────────────────────────────────────────
+let modPanelOpen = false;
+
+function toggleModPanel() {
+  modPanelOpen = !modPanelOpen;
+  $('mod-panel').classList.toggle('hidden', !modPanelOpen);
+  if (modPanelOpen && gameState) renderModStatsPanel(gameState);
+}
+
+function closeModPanel() {
+  modPanelOpen = false;
+  $('mod-panel').classList.add('hidden');
+}
+
+function renderModStatsPanel(state) {
+  const el = $('mod-stats-list');
+  if (!el || !state?.players) return;
+  el.innerHTML = '';
+  state.players.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'mod-player-row';
+    row.innerHTML = `
+      <div class="mod-player-name">${p.name}${p.id === myId ? ' (you)' : ''}${p.isAI ? ' 🤖' : ''}</div>
+      <div class="mod-stat-fields">
+        <label>Score<input type="number" class="mod-score" value="${p.score}" min="0" max="9999" data-id="${p.id}"></label>
+        <label>Sets<input type="number" class="mod-sets" value="${p.setCount ?? 0}" min="0" max="99" data-id="${p.id}"></label>
+      </div>
+      <button class="btn btn-amber mod-apply-btn" data-id="${p.id}">Apply</button>`;
+    row.querySelector('.mod-apply-btn').addEventListener('click', () => applyModStats(p.id, row));
+    el.appendChild(row);
+  });
+}
+
+function applyModStats(playerId, row) {
+  const score = parseInt(row.querySelector('.mod-score').value);
+  const sets  = parseInt(row.querySelector('.mod-sets').value);
+  socket.emit('mod-set-stats', { playerId, score, sets });
+  toast('Stats updated', 'success', 1500);
+}
 
 // ─── URL-based auto-join ──────────────────────────────────────────────────────
 window.addEventListener('load', () => {

@@ -105,6 +105,7 @@
         <div class="game-header-right">
           <span class="turn-badge" id="turn-badge">—</span>
           <button class="btn btn-header-icon" id="btn-theme" onclick="cycleTheme()" title="Change theme">🟢 Theme</button>
+          <button class="btn btn-header-icon btn-mod" onclick="toggleModPanel()" title="Mod tools">🛠 Mod</button>
           <button class="btn btn-header-icon btn-exit" onclick="exitGame()" title="Leave game">✕ Exit</button>
         </div>
       </div>
@@ -170,8 +171,55 @@
       <!-- Game Log -->
       <div class="game-log" id="game-log"></div>
 
+    </div><!-- end game-layout -->
+
+    <!-- Mod Panel (right-side drawer, outside game-layout) -->
+    <div id="mod-panel" class="mod-panel hidden">
+      <div class="mod-panel-header">
+        <span>🛠 Mod Tools</span>
+        <button class="btn-close-mod" onclick="closeModPanel()">✕</button>
+      </div>
+
+      <!-- Sim Section -->
+      <div class="mod-section">
+        <div class="mod-section-title">🤖 Auto Simulation</div>
+        <div class="sim-type-row">
+          <button class="sim-type-btn active" data-type="turns" onclick="setSimType('turns')">Turns</button>
+          <button class="sim-type-btn" data-type="moves" onclick="setSimType('moves')">Moves</button>
+          <button class="sim-type-btn" data-type="rounds" onclick="setSimType('rounds')">Rounds</button>
+        </div>
+        <div class="sim-options-row">
+          <div class="sim-opt">
+            <label class="sim-label">Count</label>
+            <input type="number" id="sim-count" value="5" min="1" max="999">
+          </div>
+          <div class="sim-opt">
+            <label class="sim-label">Speed</label>
+            <select id="sim-speed-sel">
+              <option value="250">Fast</option>
+              <option value="700" selected>Normal</option>
+              <option value="1500">Slow</option>
+            </select>
+          </div>
+        </div>
+        <div id="sim-btn-row">
+          <button class="btn btn-primary sim-start-btn" onclick="startSim()">▶ Start Sim</button>
+        </div>
+        <div id="sim-running-row" class="hidden sim-running">
+          <span id="sim-status-text" class="sim-status-text">—</span>
+          <button class="btn btn-ghost" onclick="stopSim()">■ Stop</button>
+        </div>
+      </div>
+
+      <!-- Player Stats Section -->
+      <div class="mod-section">
+        <div class="mod-section-title">📊 Player Stats</div>
+        <div class="mod-stats-hint">Edit score &amp; current-round sets for any player, then click Apply.</div>
+        <div id="mod-stats-list"></div>
+      </div>
     </div>
-  </div>
+
+  </div><!-- end screen-game -->
 
   <!-- ═══════════════════════════════════ ROUND END ═════════════════════════ -->
   <div id="screen-round-end" class="screen">

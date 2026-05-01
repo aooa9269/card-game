@@ -875,6 +875,26 @@ io.on('connection', (socket) => {
     }
   });
 
+  // ── Mod: set player stats ──────────────────────────────────────────────────
+  socket.on('mod-set-stats', ({ playerId, score, sets }) => {
+    try {
+      const room = rooms.get(socket.data.roomCode);
+      if (!room || room.phase !== 'playing') return;
+      const player = room.players.find(p => p.id === playerId);
+      if (!player) return;
+      if (score !== undefined) player.score = Math.max(0, parseInt(score) || 0);
+      if (sets !== undefined) {
+        const target = Math.max(0, parseInt(sets) || 0);
+        while (player.sets.length < target) player.sets.push([]);
+        while (player.sets.length > target) player.sets.pop();
+      }
+      room.pushLog(`[MOD] Stats adjusted for ${player.name}`);
+      broadcastState(room);
+    } catch (err) {
+      console.error('mod-set-stats error:', err);
+    }
+  });
+
   // ── Leave room (voluntary exit) ────────────────────────────────────────────
   socket.on('leave-room', () => {
     const code = socket.data.roomCode;
