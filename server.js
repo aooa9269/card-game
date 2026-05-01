@@ -296,7 +296,8 @@ class Room {
       p.hand = [];
       p.isReady = false;
     }
-    allCards.push(...this.carcass, ...this.deck);
+    allCards.push(...this.carcass, ...this.deck, ...this.pickPool);
+    this.pickPool = [];
     this.deck = shuffle(allCards);
     this.carcass = [];
 
@@ -827,28 +828,33 @@ io.on('connection', (socket) => {
 
   // ── Game actions ───────────────────────────────────────────────────────────
   socket.on('game-action', ({ type, ...data }) => {
-    const room = rooms.get(socket.data.roomCode);
-    if (!room || room.phase !== 'playing') return;
+    try {
+      const room = rooms.get(socket.data.roomCode);
+      if (!room || room.phase !== 'playing') return;
 
-    let result;
-    if (type === 'claim-set') {
-      result = room.claimSet(socket.id, data.cardIds);
-    } else if (type === 'swap-carcass') {
-      result = room.swapWithCarcass(socket.id, data.takeIds, data.giveIds);
-    } else if (type === 'replace-hand') {
-      result = room.replaceHand(socket.id);
-    } else if (type === 'end-turn') {
-      result = room.endTurn(socket.id);
-      if (result?.roundEnded) { broadcastState(room); return; }
-      if (result?.success && room.getCurrentPlayer()?.isAI) {
-        broadcastState(room);
-        scheduleAI(room);
-        return;
+      let result;
+      if (type === 'claim-set') {
+        result = room.claimSet(socket.id, data.cardIds);
+      } else if (type === 'swap-carcass') {
+        result = room.swapWithCarcass(socket.id, data.takeIds, data.giveIds);
+      } else if (type === 'replace-hand') {
+        result = room.replaceHand(socket.id);
+      } else if (type === 'end-turn') {
+        result = room.endTurn(socket.id);
+        if (result?.roundEnded) { broadcastState(room); return; }
+        if (result?.success && room.getCurrentPlayer()?.isAI) {
+          broadcastState(room);
+          scheduleAI(room);
+          return;
+        }
       }
-    }
 
-    if (result && !result.success) { socket.emit('error', { message: result.error }); return; }
-    broadcastState(room);
+      if (result && !result.success) { socket.emit('error', { message: result.error }); return; }
+      broadcastState(room);
+    } catch (err) {
+      console.error('game-action error:', err);
+      socket.emit('error', { message: 'Server error processing action. Please try again.' });
+    }
   });
 
   // ── Ready for next round ───────────────────────────────────────────────────
@@ -866,6 +872,27 @@ io.on('connection', (socket) => {
       room.startNextRound(wasTotalTie);
       broadcastState(room);
       if (room.getCurrentPlayer()?.isAI) scheduleAI(room);
+    }
+  });
+
+  // ── Leave room (voluntary exit) ────────────────────────────────────────────
+  socket.on('leave-room', () => {
+    const code = socket.data.roomCode;
+    if (!code) return;
+    const room = rooms.get(code);
+    if (!room) return;
+
+    const name = socket.data.name || 'A player';
+    room.players = room.players.filter(p => p.id !== socket.id);
+    socket.leave(code);
+    delete socket.data.roomCode;
+
+    if (room.players.filter(p => !p.isAI).length === 0) {
+      rooms.delete(code);
+    } else {
+      room.pushLog(`${name} left the game`);
+      socket.to(code).emit('player-left', { name });
+      broadcastState(room);
     }
   });
 

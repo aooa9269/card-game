@@ -104,6 +104,8 @@
         <div class="game-header-center" id="header-scores"></div>
         <div class="game-header-right">
           <span class="turn-badge" id="turn-badge">—</span>
+          <button class="btn btn-header-icon" id="btn-theme" onclick="cycleTheme()" title="Change theme">🟢 Theme</button>
+          <button class="btn btn-header-icon btn-exit" onclick="exitGame()" title="Leave game">✕ Exit</button>
         </div>
       </div>
 
@@ -179,6 +181,10 @@
       <div class="ready-area">
         <button class="btn btn-primary" id="btn-ready" onclick="readyNextRound()">Ready for Next Round</button>
         <p class="ready-status" id="ready-status"></p>
+      </div>
+      <div class="end-screen-actions">
+        <button class="btn btn-outline" onclick="cycleTheme()">🎨 Change Theme</button>
+        <button class="btn btn-ghost" onclick="exitGame()">✕ Leave Game</button>
       </div>
     </div>
   </div>

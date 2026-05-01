@@ -557,6 +557,7 @@ socket.on('player-left', ({ name }) => { toast(`${name} left the game`); });
 socket.on('player-disconnected', ({ name }) => { toast(`${name} disconnected`); });
 
 socket.on('game-state', (state) => {
+  const prevPhase = gameState?.phase;
   gameState = state;
 
   if (state.phase === 'lobby') {
@@ -568,6 +569,12 @@ socket.on('game-state', (state) => {
     renderFirstPick(state);
 
   } else if (state.phase === 'playing') {
+    // Clear all selection state when entering a fresh playing phase
+    if (prevPhase !== 'playing') {
+      selectedHandIds.clear();
+      takeIds.clear();
+      giveIds.clear();
+    }
     swapMode = false;
     showScreen('screen-game');
     renderGame(state);
@@ -581,6 +588,43 @@ socket.on('game-state', (state) => {
 });
 
 socket.on('error', ({ message }) => { toast(message, 'error'); });
+
+// ─── Exit Game ───────────────────────────────────────────────────────────────
+function exitGame() {
+  const confirmed = confirm('Leave the game? Your progress will be lost.');
+  if (!confirmed) return;
+  socket.emit('leave-room');
+  // Reset local state
+  swapMode = false;
+  selectedHandIds.clear();
+  takeIds.clear();
+  giveIds.clear();
+  gameState = null;
+  roomCode = null;
+  showScreen('screen-landing');
+}
+
+// ─── Theme Switcher ───────────────────────────────────────────────────────────
+const THEMES = ['theme-green', 'theme-dark', 'theme-blue', 'theme-red'];
+const THEME_LABELS = { 'theme-green': '🟢', 'theme-dark': '⚫', 'theme-blue': '🔵', 'theme-red': '🔴' };
+let currentTheme = localStorage.getItem('carcass-theme') || 'theme-green';
+
+function applyTheme(theme) {
+  THEMES.forEach(t => document.body.classList.remove(t));
+  document.body.classList.add(theme);
+  currentTheme = theme;
+  localStorage.setItem('carcass-theme', theme);
+  const btn = $('btn-theme');
+  if (btn) btn.textContent = THEME_LABELS[theme] + ' Theme';
+}
+
+function cycleTheme() {
+  const idx = THEMES.indexOf(currentTheme);
+  applyTheme(THEMES[(idx + 1) % THEMES.length]);
+}
+
+// Apply saved theme on load
+applyTheme(currentTheme);
 
 // ─── URL-based auto-join ──────────────────────────────────────────────────────
 window.addEventListener('load', () => {

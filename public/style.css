@@ -24,6 +24,7 @@ body {
   height: 100vh;
   overflow: hidden;
   user-select: none;
+  transition: background 0.4s;
 }
 
 /* ── Screens ──────────────────────────────────────────────────────────────── */
@@ -691,3 +692,89 @@ body {
 
 /* ── Utilities ────────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
+
+/* ── Header icon buttons (theme + exit) ──────────────────────────────────── */
+.game-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-header-icon {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.75);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 5px 10px;
+  font-size: 0.72rem;
+  border-radius: 6px;
+}
+.btn-header-icon:not(:disabled):hover {
+  background: rgba(255,255,255,0.15);
+  color: var(--white);
+}
+.btn-exit {
+  color: #ff7070;
+  border-color: rgba(255,100,100,0.3);
+}
+.btn-exit:not(:disabled):hover {
+  background: rgba(255,80,80,0.15);
+  color: #ff9090;
+}
+
+/* ── Round-end / game-end extra actions ──────────────────────────────────── */
+.end-screen-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── Themes ───────────────────────────────────────────────────────────────── */
+
+/* Dark / Noir */
+.theme-dark {
+  --green-dark:  #0d0d14;
+  --green-felt:  #1a1a2e;
+  --green-mid:   #16213e;
+}
+.theme-dark .game-layout {
+  background: var(--green-felt);
+  background-image: radial-gradient(ellipse at 50% 50%, #1e2a4a 0%, #1a1a2e 60%, #0d0d14 100%);
+}
+.theme-dark #screen-first-pick,
+.theme-dark .landing-bg {
+  background: radial-gradient(ellipse at 50% 40%, #1a1a2e 0%, #0d0d14 60%, #06060a 100%);
+}
+.theme-dark body { background: var(--green-dark); }
+
+/* Blue / Ocean */
+.theme-blue {
+  --green-dark:  #0a1628;
+  --green-felt:  #0d2137;
+  --green-mid:   #163356;
+}
+.theme-blue .game-layout {
+  background: var(--green-felt);
+  background-image: radial-gradient(ellipse at 50% 50%, #1a3a6a 0%, #0d2137 60%, #0a1628 100%);
+}
+.theme-blue #screen-first-pick,
+.theme-blue .landing-bg {
+  background: radial-gradient(ellipse at 50% 40%, #0d2137 0%, #0a1628 60%, #060e1a 100%);
+}
+.theme-blue body { background: var(--green-dark); }
+
+/* Red / Velvet */
+.theme-red {
+  --green-dark:  #1a0808;
+  --green-felt:  #2e1010;
+  --green-mid:   #4a1818;
+}
+.theme-red .game-layout {
+  background: var(--green-felt);
+  background-image: radial-gradient(ellipse at 50% 50%, #5a2020 0%, #2e1010 60%, #1a0808 100%);
+}
+.theme-red #screen-first-pick,
+.theme-red .landing-bg {
+  background: radial-gradient(ellipse at 50% 40%, #2e1010 0%, #1a0808 60%, #0d0404 100%);
+}
+.theme-red body { background: var(--green-dark); }
