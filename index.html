@@ -1371,6 +1371,31 @@ body {
   .mod-tab { flex: 1; text-align: center; font-size: 0.72rem; padding: 5px 6px; }
   #mod-game-btn { bottom: 120px; }
 }
+/* ── Stats ─────────────────────────────────────────────────────────────────── */
+.stats-modal-box { width: min(680px, 96vw); max-height: 85vh; overflow-y: auto; }
+.stats-tabs { display: flex; gap: 2px; flex-wrap: wrap; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.stats-tab { background: none; border: none; border-bottom: 3px solid transparent; color: rgba(255,255,255,0.5); padding: 7px 13px; font-size: 0.8rem; font-family: inherit; cursor: pointer; transition: all 0.15s; margin-bottom: -1px; }
+.stats-tab.active { color: var(--gold-bright); border-bottom-color: var(--gold-bright); }
+.stats-tab:hover:not(.active) { color: rgba(255,255,255,0.8); }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 520px) { .stats-grid { grid-template-columns: 1fr; } }
+.stats-section { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 11px 13px; }
+.stats-section-title { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(212,160,23,0.8); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.07); padding-bottom: 4px; }
+.stat-row { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; font-size: 0.79rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: rgba(255,255,255,0.52); }
+.stat-value { color: #fff; font-weight: bold; text-align: right; }
+.stat-pct { color: rgba(255,255,255,0.32); font-weight: normal; font-size: 0.7rem; }
+.stat-bar-wrap { width: 100%; background: rgba(255,255,255,0.08); border-radius: 3px; height: 5px; margin-top: 2px; overflow: hidden; }
+.stat-bar-fill { height: 100%; border-radius: 3px; background: var(--gold); }
+.rank-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.rank-chip { background: rgba(212,160,23,0.13); border: 1px solid rgba(212,160,23,0.3); border-radius: 12px; padding: 2px 10px; font-size: 0.74rem; color: var(--gold-bright); }
+.suit-chip { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 2px 10px; font-size: 0.82rem; }
+.lb-table { width: 100%; }
+.stats-hint { font-size: 0.82rem; color: rgba(255,255,255,0.38); text-align: center; padding: 24px 0; }
+.landing-extras { display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+.btn-landing-extra { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.55); border-radius: 7px; padding: 7px 18px; font-size: 0.78rem; font-family: inherit; cursor: pointer; transition: all 0.15s; }
+.btn-landing-extra:hover { background: rgba(255,255,255,0.11); color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.25); }
 </style>
 </head>
 <body>
@@ -1412,6 +1437,10 @@ body {
         <div class="menu-card-title">Leaderboard</div>
         <div class="menu-card-desc">Top players worldwide</div>
       </div>
+    </div>
+    <div class="landing-extras">
+      <button class="btn-landing-extra" onclick="openStatsModal()">📊 Stats</button>
+      <button class="btn-landing-extra" onclick="showLeaderboard()">🏆 Leaderboard</button>
     </div>
     <p class="join-hint" id="join-link-hint"></p>
   </div>
@@ -1710,6 +1739,26 @@ body {
       <div class="modal-btns" style="margin-top:14px">
         <button class="btn btn-primary" onclick="saveDeckTheme()">Apply &amp; Save</button>
         <button class="btn btn-ghost" onclick="cancelDeckModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Modal -->
+  <div id="stats-modal" class="modal-overlay hidden" onclick="closeStatsModal(event)">
+    <div class="modal-box stats-modal-box">
+      <h2 style="margin-bottom:12px">📊 Statistics</h2>
+      <div class="stats-tabs">
+        <button class="stats-tab active" id="stab-mine"  onclick="switchStatsTab('mine')">My Stats</button>
+        <button class="stats-tab"        id="stab-21s"   onclick="switchStatsTab('21s')">Most 21s 🎯</button>
+        <button class="stats-tab"        id="stab-wins"  onclick="switchStatsTab('wins')">Wins 🏆</button>
+        <button class="stats-tab"        id="stab-pts"   onclick="switchStatsTab('pts')">Points ⭐</button>
+      </div>
+      <div id="stats-tab-mine"></div>
+      <div id="stats-tab-21s"  class="hidden"></div>
+      <div id="stats-tab-wins" class="hidden"></div>
+      <div id="stats-tab-pts"  class="hidden"></div>
+      <div class="modal-btns" style="margin-top:14px">
+        <button class="btn btn-ghost" onclick="closeStatsModal()">Close</button>
       </div>
     </div>
   </div>
@@ -3689,6 +3738,8 @@ function toggleGive(id, el) {
 function claimSet() {
   if (!isMyTurn || selectedHandIds.size < 2) return;
   playSound('claim');
+  const _me = gameState?.players.find(p => p.id === myId);
+  if (_me) recordClaim((_me.hand || []).filter(c => c && selectedHandIds.has(c.id)));
   sendAction({ type: 'claim-set', cardIds: [...selectedHandIds] });
   selectedHandIds.clear();
 }
@@ -3709,12 +3760,14 @@ function cancelSwapMode() {
 
 function confirmSwap() {
   if (takeIds.size === 0 || giveIds.size === 0 || takeIds.size !== giveIds.size) return;
+  recordSwap();
   sendAction({ type: 'swap-carcass', takeIds: [...takeIds], giveIds: [...giveIds] });
   swapMode = false; takeIds.clear(); giveIds.clear();
 }
 
 function replaceHand() {
   if (!isMyTurn) return;
+  recordReplace();
   sendAction({ type: 'replace-hand' });
   selectedHandIds.clear();
 }
@@ -3774,7 +3827,7 @@ function renderGameEnd(state) {
   const me = state.players.find(p => p.id === myId);
   if (me && !me.isAI) {
     const humanCount = state.players.filter(p => !p.isAI).length;
-    if (humanCount >= 1) saveGameStats(iWon, me.score || 0);
+    if (humanCount >= 1) saveGameStatsExtended(iWon, me.score || 0);
   }
 }
 
@@ -3825,6 +3878,178 @@ function onGameState(state) {
       renderGameEnd(state);
       break;
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ─── Stats System ────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let _sessionClaims  = 0;
+let _sessionSwaps   = 0;
+let _sessionReplaces = 0;
+
+function resetSessionStats() { _sessionClaims = 0; _sessionSwaps = 0; _sessionReplaces = 0; }
+
+function getStatsEntry(name) {
+  const e = getLbEntry(name);
+  return {
+    ...e,
+    totalClaims:      e.totalClaims      || 0,
+    totalCardsIn21s:  e.totalCardsIn21s  || 0,
+    claimsBySize:     e.claimsBySize     || {},
+    rankUsage:        e.rankUsage        || {},
+    suitUsage:        e.suitUsage        || {},
+    bestGameClaims:   e.bestGameClaims   || 0,
+    currentWinStreak: e.currentWinStreak || 0,
+    longestWinStreak: e.longestWinStreak || 0,
+    totalSwaps:       e.totalSwaps       || 0,
+    totalReplaces:    e.totalReplaces    || 0,
+    hintsUsed:        e.hintsUsed        || 0,
+  };
+}
+
+function recordClaim(cards) {
+  if (!currentUser || getBanned().includes(currentUser.name)) return;
+  const e = getStatsEntry(currentUser.name);
+  e.totalClaims++;
+  e.totalCardsIn21s += cards.length;
+  e.claimsBySize[cards.length] = (e.claimsBySize[cards.length] || 0) + 1;
+  cards.forEach(c => {
+    e.rankUsage[c.rank] = (e.rankUsage[c.rank] || 0) + 1;
+    e.suitUsage[c.suit] = (e.suitUsage[c.suit] || 0) + 1;
+  });
+  _sessionClaims++;
+  e.bestGameClaims = Math.max(e.bestGameClaims, _sessionClaims);
+  saveLbEntry(e);
+}
+
+function recordSwap()    { if (!currentUser) return; const e = getStatsEntry(currentUser.name); e.totalSwaps++;    _sessionSwaps++;    saveLbEntry(e); }
+function recordReplace() { if (!currentUser) return; const e = getStatsEntry(currentUser.name); e.totalReplaces++; _sessionReplaces++; saveLbEntry(e); }
+function recordHint()    { if (!currentUser) return; const e = getStatsEntry(currentUser.name); e.hintsUsed++;                        saveLbEntry(e); }
+
+function saveGameStatsExtended(won, pointsEarned) {
+  if (!currentUser || getBanned().includes(currentUser.name)) return;
+  const e = getStatsEntry(currentUser.name);
+  e.wins         += won ? 1 : 0;
+  e.gamesPlayed  += 1;
+  e.totalPoints  += pointsEarned;
+  e.bestGameScore = Math.max(e.bestGameScore, pointsEarned);
+  if (won) { e.currentWinStreak++; e.longestWinStreak = Math.max(e.longestWinStreak, e.currentWinStreak); }
+  else      { e.currentWinStreak = 0; }
+  saveLbEntry(e);
+  resetSessionStats();
+}
+
+// ── Stats modal ───────────────────────────────────────────────────────────────
+function openStatsModal() {
+  switchStatsTab('mine');
+  document.getElementById('stats-modal')?.classList.remove('hidden');
+}
+function closeStatsModal(e) {
+  if (!e || e.target === document.getElementById('stats-modal'))
+    document.getElementById('stats-modal')?.classList.add('hidden');
+}
+function switchStatsTab(tab) {
+  ['mine','21s','wins','pts'].forEach(t => {
+    document.getElementById(`stab-${t}`)?.classList.toggle('active', t === tab);
+    document.getElementById(`stats-tab-${t}`)?.classList.toggle('hidden', t !== tab);
+  });
+  if (tab === 'mine') renderMyStats();
+  else renderStatsLeaderboard(tab);
+}
+
+function renderMyStats() {
+  const el = document.getElementById('stats-tab-mine');
+  if (!el) return;
+  if (!currentUser) { el.innerHTML = '<p class="stats-hint">Sign in to track your personal stats.</p>'; return; }
+  const e = getStatsEntry(currentUser.name);
+  const pct = (n, d) => d > 0 ? ((n / d) * 100).toFixed(0) + '%' : '—';
+  const avg = (n, d) => d > 0 ? (n / d).toFixed(1) : '—';
+
+  // Rank usage sorted
+  const rankEntries = Object.entries(e.rankUsage).sort((a,b) => b[1]-a[1]);
+  const suitEntries = Object.entries(e.suitUsage).sort((a,b) => b[1]-a[1]);
+  const favRank = rankEntries[0] ? `${rankEntries[0][0]} (×${rankEntries[0][1]})` : '—';
+  const favSuit = suitEntries[0] ? `${suitEntries[0][0]} (×${suitEntries[0][1]})` : '—';
+
+  // 21 size breakdown with mini bar
+  const sizes = [2,3,4,5];
+  const breakdownHTML = sizes.map(n => {
+    const cnt = e.claimsBySize[n] || 0;
+    const barW = e.totalClaims > 0 ? Math.round(cnt / e.totalClaims * 100) : 0;
+    return `<div class="stat-row">
+      <span class="stat-label">${n}-card 21s</span>
+      <span class="stat-value">${cnt} <span class="stat-pct">(${barW}%)</span></span>
+    </div>
+    <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${barW}%"></div></div>`;
+  }).join('');
+
+  // Top ranks chips
+  const topRanksHTML = rankEntries.slice(0,6).map(([r,c]) =>
+    `<span class="rank-chip">${r} ×${c}</span>`).join('');
+  const suitChipsHTML = suitEntries.map(([s,c]) =>
+    `<span class="suit-chip">${s} ×${c}</span>`).join('');
+
+  el.innerHTML = `<div class="stats-grid">
+    <div class="stats-section">
+      <div class="stats-section-title">Overall</div>
+      <div class="stat-row"><span class="stat-label">Games played</span><span class="stat-value">${e.gamesPlayed}</span></div>
+      <div class="stat-row"><span class="stat-label">Wins</span><span class="stat-value">${e.wins} <span class="stat-pct">(${pct(e.wins, e.gamesPlayed)})</span></span></div>
+      <div class="stat-row"><span class="stat-label">Win streak</span><span class="stat-value">${e.currentWinStreak} <span class="stat-pct">best: ${e.longestWinStreak}</span></span></div>
+      <div class="stat-row"><span class="stat-label">Total points</span><span class="stat-value">${e.totalPoints}</span></div>
+      <div class="stat-row"><span class="stat-label">Avg pts / game</span><span class="stat-value">${avg(e.totalPoints, e.gamesPlayed)}</span></div>
+      <div class="stat-row"><span class="stat-label">Best game score</span><span class="stat-value">${e.bestGameScore}</span></div>
+    </div>
+    <div class="stats-section">
+      <div class="stats-section-title">21s</div>
+      <div class="stat-row"><span class="stat-label">Total 21s claimed</span><span class="stat-value">${e.totalClaims}</span></div>
+      <div class="stat-row"><span class="stat-label">21s per game</span><span class="stat-value">${avg(e.totalClaims, e.gamesPlayed)}</span></div>
+      <div class="stat-row"><span class="stat-label">Avg cards per 21</span><span class="stat-value">${avg(e.totalCardsIn21s, e.totalClaims)}</span></div>
+      <div class="stat-row"><span class="stat-label">Best game (21s)</span><span class="stat-value">${e.bestGameClaims}</span></div>
+      ${breakdownHTML}
+    </div>
+    <div class="stats-section">
+      <div class="stats-section-title">Play Style</div>
+      <div class="stat-row"><span class="stat-label">Fav. rank</span><span class="stat-value">${favRank}</span></div>
+      <div class="stat-row"><span class="stat-label">Fav. suit</span><span class="stat-value">${favSuit}</span></div>
+      <div class="stat-row"><span class="stat-label">Total swaps</span><span class="stat-value">${e.totalSwaps}</span></div>
+      <div class="stat-row"><span class="stat-label">Swaps / game</span><span class="stat-value">${avg(e.totalSwaps, e.gamesPlayed)}</span></div>
+      <div class="stat-row"><span class="stat-label">Hand replaces</span><span class="stat-value">${e.totalReplaces}</span></div>
+      <div class="stat-row"><span class="stat-label">Hints used</span><span class="stat-value">${e.hintsUsed}</span></div>
+    </div>
+    ${topRanksHTML ? `<div class="stats-section">
+      <div class="stats-section-title">Ranks used in 21s</div>
+      <div class="rank-chips">${topRanksHTML}</div>
+      ${suitChipsHTML ? `<div class="rank-chips" style="margin-top:8px">${suitChipsHTML}</div>` : ''}
+    </div>` : ''}
+  </div>`;
+}
+
+function renderStatsLeaderboard(tab) {
+  const el = document.getElementById(`stats-tab-${tab}`);
+  if (!el) return;
+  const field = { '21s': 'totalClaims', wins: 'wins', pts: 'totalPoints' };
+  const header = { '21s': '21s', wins: 'Wins', pts: 'Points' };
+  const f = field[tab], h = header[tab];
+  const rows = getLb()
+    .filter(e => !getBanned().includes(e.name))
+    .sort((a,b) => (b[f]||0) - (a[f]||0))
+    .slice(0, 15);
+  if (!rows.length) { el.innerHTML = '<p class="stats-hint">No data yet — play some games!</p>'; return; }
+  const medals = ['🥇','🥈','🥉'];
+  let html = `<table class="scores-table lb-table">
+    <thead><tr><th>#</th><th>Player</th><th>${h}</th><th>Games</th></tr></thead><tbody>`;
+  rows.forEach((e,i) => {
+    const me = currentUser?.name === e.name;
+    html += `<tr${me?' class="winner"':''}>
+      <td>${medals[i]||i+1}</td>
+      <td>${e.name}${me?' ★':''}</td>
+      <td>${e[f]||0}</td>
+      <td>${e.gamesPlayed||0}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -3976,6 +4201,7 @@ function hintPlay() {
       selectedHandIds.clear();
       combo.forEach(c => selectedHandIds.add(c.id));
       renderGame(gameState);
+      recordHint();
       playSound('select');
       toast('Found a 21 — hit Claim!', 'success', 2000);
       return;
