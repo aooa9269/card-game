@@ -1494,7 +1494,7 @@ body {
 <div id="screen-first-pick" class="screen">
   <div class="pick-wrap">
     <h2 class="pick-title">Who Goes First?</h2>
-    <p class="pick-subtitle">Tap a face-down card — highest <em>unique</em> value goes first</p>
+    <p class="pick-subtitle">Tap a face-down card — highest value goes first — ties go to rock paper scissors</p>
     <div class="pick-pool" id="pick-pool"></div>
     <div class="pick-results" id="pick-results"></div>
     <div class="pick-legend">A=14&nbsp;|&nbsp;K=13&nbsp;|&nbsp;Q=12&nbsp;|&nbsp;J=11&nbsp;|&nbsp;2–10=face value</div>
@@ -1803,8 +1803,10 @@ body {
         <p><strong>Card values:</strong> A = 1 or 11 &nbsp;|&nbsp; J/Q/K = 10 &nbsp;|&nbsp; 2–10 = face value</p>
         <p><strong>Deck empty:</strong> Pick any card from the Carcass to draw instead.</p>
         <p><strong>Stalemate:</strong> If nobody claims 21 through a full cycle after the deck is gone, round ends.</p>
-        <p><strong>Scoring:</strong> Player with most sets gets n−1 pts, next n−2, etc. Full tie = nobody scores, restart.</p>
-        <p><strong>First turn:</strong> Each player picks a face-down card — highest unique value goes first.</p>
+        <li><strong>Bonus hand:</strong> If you use all 5 cards making 21s, you get 5 fresh cards once that turn — then end turn normally.</li>
+        <p><strong>Scoring:</strong> Most 21s gets n−1 pts, next gets n−2, etc. Tied players share the same points. First to 2×n pts wins. If two players tie at 2×n+, they play playoff rounds; if still tied, use rock paper scissors.</p>
+        <p><strong>Deck size:</strong> 1 deck for 2–3 players, 2 decks for 4–5 players. Carcass: 3 cards (2–3 players), 4 cards (4 players), 5 cards (5 players).</p>
+        <p><strong>First turn:</strong> Each player flips a face-down card — highest value goes first. Ties: rock paper scissors.</p>
         <p style="margin-top:10px;color:rgba(255,255,255,0.5)"><strong>Keyboard shortcuts:</strong><br>
           <kbd>Enter</kbd> Claim 21 &nbsp; <kbd>H</kbd> Hint &nbsp; <kbd>E</kbd> End turn &nbsp; <kbd>Esc</kbd> Cancel/deselect &nbsp; <kbd>R</kbd> Rules
         </p>
@@ -2315,8 +2317,8 @@ function modForceEndRound() {
 
 function modRefillCarcass() {
   if (!isHost || !room) return;
-  // Draw up to 3 cards from deck to fill carcass back to 3
-  while (room.carcass.length < 3 && room.deck.length > 0) {
+  const cc = carcassCount(room.players.length);
+  while (room.carcass.length < cc && room.deck.length > 0) {
     room.carcass.push(room.deck.pop());
   }
   broadcastState();
@@ -2335,7 +2337,8 @@ function modReshuffleDeck() {
     [room.deck[i], room.deck[j]] = [room.deck[j], room.deck[i]];
   }
   // Refill carcass
-  while (room.carcass.length < 3 && room.deck.length > 0) room.carcass.push(room.deck.pop());
+  const cc3 = carcassCount(room.players.length);
+  while (room.carcass.length < cc3 && room.deck.length > 0) room.carcass.push(room.deck.pop());
   broadcastState();
   toast('Deck reshuffled.', 'success');
   renderModGameOverlay();
@@ -2392,6 +2395,10 @@ function modKickPlayer(peerId, name) {
 
 const SUITS = ['♠', '♥', '♦', '♣'];
 const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+
+function carcassCount(numPlayers) {
+  return numPlayers <= 3 ? 3 : numPlayers; // 2-3→3, 4→4, 5→5
+}
 
 function createDeck() {
   const deck = [];
@@ -2522,7 +2529,8 @@ class Room {
   }
 
   startGame() {
-    this.deck = shuffle(createDeck());
+    const numDecks = this.players.length >= 4 ? 2 : 1;
+    this.deck = shuffle(numDecks === 2 ? [...createDeck(), ...createDeck()] : createDeck());
     for (const p of this.players) { p.hand = []; p.sets = []; }
     this.pickPool = [];
     for (let i = 0; i < this.players.length; i++) this.pickPool.push(this.deck.pop());
@@ -2534,12 +2542,14 @@ class Room {
 
   setupPlayPhase() {
     this.carcass = [];
-    for (let i = 0; i < 3; i++) if (this.deck.length) this.carcass.push(this.deck.pop());
+    const cc = carcassCount(this.players.length);
+    for (let i = 0; i < cc; i++) if (this.deck.length) this.carcass.push(this.deck.pop());
     for (let i = 0; i < 5; i++)
       for (const p of this.players)
         if (this.deck.length) p.hand.push(this.deck.pop());
     this.phase = 'playing';
     this.hasActed = false;
+    this.usedFreeHand = false;
     this.deckEmptyLap = false;
     this.deckEmptyLapCount = 0;
     this.pushLog(`Round ${this.roundNumber} — ${this.getCurrentPlayer().name} goes first!`);
@@ -2614,12 +2624,14 @@ class Room {
       this.roundNumber++;
       this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
     }
-    for (let i = 0; i < 3; i++) if (this.deck.length) this.carcass.push(this.deck.pop());
+    const cc2 = carcassCount(this.players.length);
+    for (let i = 0; i < cc2; i++) if (this.deck.length) this.carcass.push(this.deck.pop());
     for (let i = 0; i < 5; i++)
       for (const p of this.players)
         if (this.deck.length) p.hand.push(this.deck.pop());
     this.phase = 'playing';
     this.hasActed = false;
+    this.usedFreeHand = false;
     this.deckEmptyLap = false;
     this.deckEmptyLapCount = 0;
     this.lastRoundTotalTie = false;
@@ -2640,6 +2652,15 @@ class Room {
     player.hand = player.hand.filter(c => !cardIds.includes(c.id));
     player.sets.push(cards);
     this.pushLog(`${player.name} claimed a 21! (${cards.map(c => c.rank + c.suit).join(', ')})`);
+    // Free extra hand: if all 5 cards were used up and we haven't given the bonus yet
+    if (player.hand.length === 0 && !this.usedFreeHand && this.deck.length >= 5) {
+      const bonus = [];
+      for (let i = 0; i < 5 && this.deck.length > 0; i++) bonus.push(this.deck.pop());
+      player.hand = bonus;
+      this.usedFreeHand = true;
+      this.pushLog(`${player.name} used all cards — bonus 5 dealt! (once per turn)`);
+      return { success: true, bonusHand: true };
+    }
     return { success: true };
   }
 
@@ -2695,6 +2716,7 @@ class Room {
     }
     if (drew.length > 0) this.pushLog(`${player.name} drew ${drew.length} card(s)`);
     this.hasActed = false;
+    this.usedFreeHand = false;
     if (prevDeckSize > 0 && this.deck.length === 0 && !this.deckEmptyLap) {
       this.deckEmptyLap = true;
       this.deckEmptyLapCount = 0;
@@ -2712,35 +2734,8 @@ class Room {
   endRound() {
     const n = this.players.length;
     this.pushLog('Round over! Scoring…');
+    // Sort by most 21s; tied players get the same points per rules
     const sorted = [...this.players].sort((a, b) => b.sets.length - a.sets.length);
-    const topSetCount = sorted[0].sets.length;
-    const allSameSets = sorted.every(p => p.sets.length === topSetCount);
-
-    if (allSameSets) {
-      const withSums = this.players
-        .map(p => ({ player: p, sum: handMaxSum(p.hand) }))
-        .sort((a, b) => b.sum - a.sum);
-      const topSum = withSums[0].sum;
-      if (withSums.every(x => x.sum === topSum)) {
-        this.lastRoundTotalTie = true;
-        this.phase = 'round_end';
-        this.pushLog('Total tie — nobody scores! Round restarts.');
-        return { success: true, roundEnded: true, gameEnded: false, totalTie: true };
-      }
-      const roundPoints = {};
-      let pts = n - 1, prevSum = -1, prevPts = 0;
-      for (const { player, sum } of withSums) {
-        if (sum === prevSum) roundPoints[player.id] = prevPts;
-        else { roundPoints[player.id] = Math.max(0, pts); prevPts = roundPoints[player.id]; }
-        prevSum = sum; pts--;
-        player.score += roundPoints[player.id];
-      }
-      const gameWinner = [...this.players].sort((a, b) => b.score - a.score).find(p => p.score >= 2 * n);
-      if (gameWinner) { this.phase = 'game_end'; return { success: true, roundEnded: true, gameEnded: true, winnerId: gameWinner.id }; }
-      this.phase = 'round_end';
-      return { success: true, roundEnded: true, gameEnded: false };
-    }
-
     const roundPoints = {};
     let pts = n - 1, prevSets = -1, prevPts = 0;
     for (const p of sorted) {
@@ -2748,9 +2743,20 @@ class Room {
       else { roundPoints[p.id] = Math.max(0, pts); prevPts = roundPoints[p.id]; }
       prevSets = p.sets.length; pts--;
       p.score += roundPoints[p.id];
+      if (roundPoints[p.id] > 0)
+        this.pushLog(`${p.name}: +${roundPoints[p.id]} pt${roundPoints[p.id] !== 1 ? 's' : ''} (${p.sets.length} 21s) → ${p.score} total`);
     }
-    const gameWinner = [...this.players].sort((a, b) => b.score - a.score).find(p => p.score >= 2 * n);
-    if (gameWinner) { this.phase = 'game_end'; return { success: true, roundEnded: true, gameEnded: true, winnerId: gameWinner.id }; }
+    // Check for game winner(s) — first to 2*n points
+    const winners = this.players.filter(p => p.score >= 2 * n);
+    if (winners.length === 1) {
+      this.phase = 'game_end';
+      return { success: true, roundEnded: true, gameEnded: true, winnerId: winners[0].id };
+    }
+    if (winners.length > 1) {
+      // Playoff: multiple players tied at 2n+ — keep playing until someone is uniquely ahead
+      const names = winners.map(p => p.name).join(' & ');
+      this.pushLog(`${names} tied at ${winners[0].score}+ pts — playoff round!`);
+    }
     this.phase = 'round_end';
     return { success: true, roundEnded: true, gameEnded: false };
   }
@@ -2769,6 +2775,7 @@ class Room {
       deckCount: this.deck.length,
       currentPlayerIndex: this.currentPlayerIndex,
       hasActed: this.hasActed,
+      usedFreeHand: this.usedFreeHand,
       deckEmptyLap: this.deckEmptyLap,
       deckEmptyLapCount: this.deckEmptyLapCount,
       log: this.log.slice(0, 8),
