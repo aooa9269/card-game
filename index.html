@@ -2746,16 +2746,20 @@ class Room {
       if (roundPoints[p.id] > 0)
         this.pushLog(`${p.name}: +${roundPoints[p.id]} pt${roundPoints[p.id] !== 1 ? 's' : ''} (${p.sets.length} 21s) → ${p.score} total`);
     }
-    // Check for game winner(s) — first to 2*n points
-    const winners = this.players.filter(p => p.score >= 2 * n);
-    if (winners.length === 1) {
-      this.phase = 'game_end';
-      return { success: true, roundEnded: true, gameEnded: true, winnerId: winners[0].id };
-    }
-    if (winners.length > 1) {
-      // Playoff: multiple players tied at 2n+ — keep playing until someone is uniquely ahead
-      const names = winners.map(p => p.name).join(' & ');
-      this.pushLog(`${names} tied at ${winners[0].score}+ pts — playoff round!`);
+    // Check for game winner — first to 2*n points, highest score breaks tie
+    const atThreshold = this.players.filter(p => p.score >= 2 * n);
+    if (atThreshold.length > 0) {
+      atThreshold.sort((a, b) => b.score - a.score);
+      const topScore = atThreshold[0].score;
+      const tied = atThreshold.filter(p => p.score === topScore);
+      if (tied.length === 1) {
+        // Clear winner
+        this.phase = 'game_end';
+        return { success: true, roundEnded: true, gameEnded: true, winnerId: tied[0].id };
+      }
+      // True tie: same score at 2n+ — keep playing (RPS in person if endless)
+      const names = tied.map(p => p.name).join(' & ');
+      this.pushLog(`${names} tied at ${topScore} pts — playoff round!`);
     }
     this.phase = 'round_end';
     return { success: true, roundEnded: true, gameEnded: false };
