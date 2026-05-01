@@ -9,6 +9,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+  --green-darkest:#0d1f0d;
   --green-dark:  #1a3a1a;
   --green-felt:  #2d5a27;
   --green-mid:   #3a7a32;
@@ -56,7 +57,7 @@ body {
 .landing-bg {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 40%, #2d5a27 0%, #1a3a1a 60%, #0d1f0d 100%);
+  background: radial-gradient(ellipse at 50% 40%, var(--green-felt) 0%, var(--green-dark) 60%, var(--green-darkest) 100%);
 }
 .landing-bg::after {
   content: '';
@@ -134,7 +135,7 @@ body {
 }
 .modal-overlay.hidden { display: none; }
 .modal-box {
-  background: #1e3a1e;
+  background: var(--green-dark);
   border: 1px solid rgba(212,160,23,0.5);
   border-radius: 14px;
   padding: 32px 36px;
@@ -234,7 +235,7 @@ body {
     "actions log";
   height: 100vh;
   background: var(--green-felt);
-  background-image: radial-gradient(ellipse at 50% 50%, #3a7a32 0%, #2d5a27 60%, #1a3a1a 100%);
+  background-image: radial-gradient(ellipse at 50% 50%, var(--green-mid) 0%, var(--green-felt) 60%, var(--green-dark) 100%);
 }
 
 /* ── Game Header ──────────────────────────────────────────────────────────── */
@@ -572,7 +573,7 @@ body {
 #screen-first-pick {
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at 50% 40%, #2d5a27 0%, #1a3a1a 60%, #0d1f0d 100%);
+  background: radial-gradient(ellipse at 50% 40%, var(--green-felt) 0%, var(--green-dark) 60%, var(--green-darkest) 100%);
   padding: 20px;
 }
 .pick-wrap {
@@ -733,7 +734,7 @@ body {
 /* ── QoL: Settings panel ───────────────────────────────────────────────────── */
 .settings-panel {
   position: fixed; top: 54px; right: 12px; z-index: 1100;
-  background: #1a2a1a; border: 1px solid rgba(212,160,23,0.4);
+  background: var(--green-dark); border: 1px solid rgba(212,160,23,0.4);
   border-radius: 10px; padding: 14px 16px; min-width: 190px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.55);
 }
@@ -921,7 +922,7 @@ body {
   justify-content: flex-start;
   padding: 20px;
   overflow-y: auto;
-  background: radial-gradient(ellipse at 50% 30%, #2d5a27 0%, #1a3a1a 70%, #0d1f0d 100%);
+  background: radial-gradient(ellipse at 50% 30%, var(--green-felt) 0%, var(--green-dark) 70%, var(--green-darkest) 100%);
 }
 .lb-header {
   display: flex;
@@ -998,7 +999,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: radial-gradient(ellipse at 50% 30%, #2d5a27 0%, #1a3a1a 70%, #0d1f0d 100%);
+  background: radial-gradient(ellipse at 50% 30%, var(--green-felt) 0%, var(--green-dark) 70%, var(--green-darkest) 100%);
 }
 .account-card {
   background: rgba(0,0,0,0.4);
@@ -1192,7 +1193,7 @@ body {
 .mod-user-avatar {
   width: 38px; height: 38px;
   border-radius: 50%;
-  background: #2d5a27;
+  background: var(--green-felt);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.1rem; font-weight: bold; color: var(--gold-bright);
   flex-shrink: 0;
@@ -1727,6 +1728,9 @@ body {
             <div class="deck-row"><label>Border</label><input type="color" id="cust-face-border" oninput="updateCustomTheme()"></div>
             <div class="deck-section-title" style="margin-top:8px">Font</div>
             <div class="deck-row"><select id="cust-font" onchange="updateCustomTheme()" style="flex:1"><option value="Georgia, serif">Georgia (default)</option><option value="'Times New Roman', Times, serif">Times New Roman</option><option value="'Palatino Linotype', Palatino, 'Book Antiqua', serif">Palatino</option><option value="Garamond, 'EB Garamond', serif">Garamond</option><option value="Arial, Helvetica, sans-serif">Arial</option><option value="'Trebuchet MS', sans-serif">Trebuchet MS</option><option value="'Courier New', monospace">Courier New</option><option value="Impact, Charcoal, sans-serif">Impact</option><option value="'Comic Sans MS', cursive">Comic Sans</option></select></div>
+            <div class="deck-section-title" style="margin-top:8px">UI Theme</div>
+            <div class="deck-row"><label>Background</label><input type="color" id="cust-theme-dark" title="Deep background" oninput="updateCustomTheme()"><input type="color" id="cust-theme-felt" title="Table surface" oninput="updateCustomTheme()"></div>
+            <div class="deck-row"><label>Accent</label><input type="color" id="cust-theme-accent" title="Accent colour" oninput="updateCustomTheme()"><input type="color" id="cust-theme-accent-br" title="Bright accent" oninput="updateCustomTheme()"></div>
           </div>
         </div>
       </div>
@@ -4305,24 +4309,42 @@ function closeRulesModal(e) { if (!e || e.target === document.getElementById('ru
 // ─── Deck Theme System ────────────────────────────────────────────────────────
 const LS_DECK = 'carcass-deck-theme';
 const DECK_PRESETS = [
-  { id:'classic-blue', name:'Classic Blue', faceBackground:'#fffef5', faceRedColor:'#cc2222', faceBlackColor:'#111111', faceBorderColor:'#cccccc', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#1a4a8a 0%,#0d2a5a 100%)', backBorderColor:'#2a6aaa', backPattern:'diamonds', backPatternColor:'rgba(255,255,255,0.13)', customBackImage:null },
-  { id:'crimson', name:'Crimson', faceBackground:'#fff8f8', faceRedColor:'#aa0000', faceBlackColor:'#111111', faceBorderColor:'#e0b0b0', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#8b0000 0%,#3d0000 100%)', backBorderColor:'#cc3333', backPattern:'crosshatch', backPatternColor:'rgba(255,200,200,0.11)', customBackImage:null },
-  { id:'midnight', name:'Midnight', faceBackground:'#1a1a2e', faceRedColor:'#ff6b6b', faceBlackColor:'#c8c8ff', faceBorderColor:'#444466', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#16213e 0%,#0f3460 50%,#533483 100%)', backBorderColor:'#8888cc', backPattern:'stars', backPatternColor:'rgba(160,160,255,0.15)', customBackImage:null },
-  { id:'gold-rush', name:'Gold Rush', faceBackground:'#fffde7', faceRedColor:'#b71c1c', faceBlackColor:'#3e2723', faceBorderColor:'#d4a017', fontFamily:"'Palatino Linotype', Palatino, 'Book Antiqua', serif", backGradient:'linear-gradient(135deg,#b8860b 0%,#8b6914 40%,#c9a227 100%)', backBorderColor:'#d4af37', backPattern:'diamonds', backPatternColor:'rgba(255,255,160,0.15)', customBackImage:null },
-  { id:'forest', name:'Forest', faceBackground:'#f1f8e9', faceRedColor:'#880000', faceBlackColor:'#1b5e20', faceBorderColor:'#81c784', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#1b5e20 0%,#2e7d32 50%,#1b5e20 100%)', backBorderColor:'#66bb6a', backPattern:'waves', backPatternColor:'rgba(144,238,144,0.14)', customBackImage:null },
-  { id:'ocean', name:'Ocean', faceBackground:'#e8f4f8', faceRedColor:'#c62828', faceBlackColor:'#006064', faceBorderColor:'#80deea', fontFamily:"'Trebuchet MS', sans-serif", backGradient:'linear-gradient(135deg,#006064 0%,#00838f 50%,#004d40 100%)', backBorderColor:'#4dd0e1', backPattern:'waves', backPatternColor:'rgba(100,220,255,0.13)', customBackImage:null },
-  { id:'fire', name:'Fire', faceBackground:'#fff8f0', faceRedColor:'#bf360c', faceBlackColor:'#3e2723', faceBorderColor:'#ff8a65', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#bf360c 0%,#e64a19 40%,#ff6f00 100%)', backBorderColor:'#ff8a50', backPattern:'stripes', backPatternColor:'rgba(255,200,80,0.13)', customBackImage:null },
-  { id:'neon', name:'Neon', faceBackground:'#0d0d0d', faceRedColor:'#ff0080', faceBlackColor:'#00ff88', faceBorderColor:'#00ff88', fontFamily:"'Courier New', monospace", backGradient:'linear-gradient(135deg,#050510 0%,#0d0d1a 100%)', backBorderColor:'#00ff88', backPattern:'grid', backPatternColor:'rgba(0,255,136,0.09)', customBackImage:null },
-  { id:'royal', name:'Royal Purple', faceBackground:'#faf5ff', faceRedColor:'#880088', faceBlackColor:'#4a0080', faceBorderColor:'#ce93d8', fontFamily:"'Palatino Linotype', Palatino, 'Book Antiqua', serif", backGradient:'linear-gradient(135deg,#4a148c 0%,#6a1b9a 50%,#38006b 100%)', backBorderColor:'#ce93d8', backPattern:'diamonds', backPatternColor:'rgba(220,170,255,0.14)', customBackImage:null },
-  { id:'minimal', name:'Minimal', faceBackground:'#ffffff', faceRedColor:'#d32f2f', faceBlackColor:'#212121', faceBorderColor:'#bdbdbd', fontFamily:'Arial, Helvetica, sans-serif', backGradient:'linear-gradient(135deg,#e0e0e0 0%,#bdbdbd 100%)', backBorderColor:'#9e9e9e', backPattern:'none', backPatternColor:'transparent', customBackImage:null },
-  { id:'retro', name:'Retro', faceBackground:'#f5e6cc', faceRedColor:'#8b1a1a', faceBlackColor:'#2c1810', faceBorderColor:'#a0785a', fontFamily:"'Times New Roman', Times, serif", backGradient:'linear-gradient(135deg,#6b4226 0%,#8b5e3c 50%,#5c3317 100%)', backBorderColor:'#d2a679', backPattern:'crosshatch', backPatternColor:'rgba(255,220,170,0.12)', customBackImage:null },
-  { id:'cyberpunk', name:'Cyberpunk', faceBackground:'#0a0a1a', faceRedColor:'#ff2d78', faceBlackColor:'#00e5ff', faceBorderColor:'#ff2d78', fontFamily:"'Courier New', monospace", backGradient:'linear-gradient(135deg,#0a0a1a 0%,#1a0a2e 100%)', backBorderColor:'#ff2d78', backPattern:'grid', backPatternColor:'rgba(255,45,120,0.09)', customBackImage:null },
-  { id:'rose', name:'Rose', faceBackground:'#fff0f5', faceRedColor:'#c2185b', faceBlackColor:'#880e4f', faceBorderColor:'#f48fb1', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#c2185b 0%,#e91e8c 50%,#880e4f 100%)', backBorderColor:'#f48fb1', backPattern:'dots', backPatternColor:'rgba(255,180,210,0.18)', customBackImage:null },
-  { id:'arctic', name:'Arctic', faceBackground:'#f0f8ff', faceRedColor:'#1565c0', faceBlackColor:'#0d47a1', faceBorderColor:'#90caf9', fontFamily:"'Trebuchet MS', sans-serif", backGradient:'linear-gradient(135deg,#90caf9 0%,#bbdefb 50%,#42a5f5 100%)', backBorderColor:'#42a5f5', backPattern:'dots', backPatternColor:'rgba(100,180,255,0.2)', customBackImage:null },
-  { id:'obsidian', name:'Obsidian', faceBackground:'#1a1a1a', faceRedColor:'#ff4444', faceBlackColor:'#d4af37', faceBorderColor:'#333333', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#000000 0%,#1a1a1a 100%)', backBorderColor:'#d4af37', backPattern:'diamonds', backPatternColor:'rgba(212,175,55,0.13)', customBackImage:null },
-  { id:'sakura', name:'Sakura', faceBackground:'#fff5f9', faceRedColor:'#d63384', faceBlackColor:'#6f42c1', faceBorderColor:'#ffb3d1', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#f8a5c2 0%,#f368a9 50%,#f8a5c2 100%)', backBorderColor:'#f368a9', backPattern:'dots', backPatternColor:'rgba(255,255,255,0.3)', customBackImage:null },
-  { id:'slate', name:'Slate', faceBackground:'#f8f9fa', faceRedColor:'#dc3545', faceBlackColor:'#343a40', faceBorderColor:'#adb5bd', fontFamily:"'Trebuchet MS', sans-serif", backGradient:'linear-gradient(135deg,#495057 0%,#343a40 100%)', backBorderColor:'#6c757d', backPattern:'stripes', backPatternColor:'rgba(255,255,255,0.07)', customBackImage:null },
-  { id:'halloween', name:'Halloween', faceBackground:'#1a0a00', faceRedColor:'#ff6600', faceBlackColor:'#cc33ff', faceBorderColor:'#ff6600', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#1a0a00 0%,#3d1a00 50%,#0d0020 100%)', backBorderColor:'#ff6600', backPattern:'stars', backPatternColor:'rgba(255,102,0,0.18)', customBackImage:null },
+  { id:'classic-blue', name:'Classic Blue', faceBackground:'#fffef5', faceRedColor:'#cc2222', faceBlackColor:'#111111', faceBorderColor:'#cccccc', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#1a4a8a 0%,#0d2a5a 100%)', backBorderColor:'#2a6aaa', backPattern:'diamonds', backPatternColor:'rgba(255,255,255,0.13)', customBackImage:null,
+    themeDarkest:'#061224', themeDark:'#0d2a5a', themeFelt:'#1a4a8a', themeMid:'#2a6aaa', themeAccent:'#d4a017', themeAccentBright:'#f0c040' },
+  { id:'crimson', name:'Crimson', faceBackground:'#fff8f8', faceRedColor:'#aa0000', faceBlackColor:'#111111', faceBorderColor:'#e0b0b0', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#8b0000 0%,#3d0000 100%)', backBorderColor:'#cc3333', backPattern:'crosshatch', backPatternColor:'rgba(255,200,200,0.11)', customBackImage:null,
+    themeDarkest:'#1a0000', themeDark:'#3d0000', themeFelt:'#6b0000', themeMid:'#8b0000', themeAccent:'#cc3333', themeAccentBright:'#ff6666' },
+  { id:'midnight', name:'Midnight', faceBackground:'#1a1a2e', faceRedColor:'#ff6b6b', faceBlackColor:'#c8c8ff', faceBorderColor:'#444466', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#16213e 0%,#0f3460 50%,#533483 100%)', backBorderColor:'#8888cc', backPattern:'stars', backPatternColor:'rgba(160,160,255,0.15)', customBackImage:null,
+    themeDarkest:'#06060f', themeDark:'#0f1030', themeFelt:'#16213e', themeMid:'#533483', themeAccent:'#8888cc', themeAccentBright:'#bbbbff' },
+  { id:'gold-rush', name:'Gold Rush', faceBackground:'#fffde7', faceRedColor:'#b71c1c', faceBlackColor:'#3e2723', faceBorderColor:'#d4a017', fontFamily:"'Palatino Linotype', Palatino, 'Book Antiqua', serif", backGradient:'linear-gradient(135deg,#b8860b 0%,#8b6914 40%,#c9a227 100%)', backBorderColor:'#d4af37', backPattern:'diamonds', backPatternColor:'rgba(255,255,160,0.15)', customBackImage:null,
+    themeDarkest:'#1a1000', themeDark:'#3d2800', themeFelt:'#6b4800', themeMid:'#8b6914', themeAccent:'#d4af37', themeAccentBright:'#f0d060' },
+  { id:'forest', name:'Forest', faceBackground:'#f1f8e9', faceRedColor:'#880000', faceBlackColor:'#1b5e20', faceBorderColor:'#81c784', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#1b5e20 0%,#2e7d32 50%,#1b5e20 100%)', backBorderColor:'#66bb6a', backPattern:'waves', backPatternColor:'rgba(144,238,144,0.14)', customBackImage:null,
+    themeDarkest:'#071209', themeDark:'#0f2e11', themeFelt:'#1b5e20', themeMid:'#2e7d32', themeAccent:'#66bb6a', themeAccentBright:'#a5d6a7' },
+  { id:'ocean', name:'Ocean', faceBackground:'#e8f4f8', faceRedColor:'#c62828', faceBlackColor:'#006064', faceBorderColor:'#80deea', fontFamily:"'Trebuchet MS', sans-serif", backGradient:'linear-gradient(135deg,#006064 0%,#00838f 50%,#004d40 100%)', backBorderColor:'#4dd0e1', backPattern:'waves', backPatternColor:'rgba(100,220,255,0.13)', customBackImage:null,
+    themeDarkest:'#001516', themeDark:'#002b2d', themeFelt:'#004d40', themeMid:'#006064', themeAccent:'#4dd0e1', themeAccentBright:'#80deea' },
+  { id:'fire', name:'Fire', faceBackground:'#fff8f0', faceRedColor:'#bf360c', faceBlackColor:'#3e2723', faceBorderColor:'#ff8a65', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#bf360c 0%,#e64a19 40%,#ff6f00 100%)', backBorderColor:'#ff8a50', backPattern:'stripes', backPatternColor:'rgba(255,200,80,0.13)', customBackImage:null,
+    themeDarkest:'#1a0800', themeDark:'#3d1800', themeFelt:'#7f2000', themeMid:'#bf360c', themeAccent:'#ff8a50', themeAccentBright:'#ffab91' },
+  { id:'neon', name:'Neon', faceBackground:'#0d0d0d', faceRedColor:'#ff0080', faceBlackColor:'#00ff88', faceBorderColor:'#00ff88', fontFamily:"'Courier New', monospace", backGradient:'linear-gradient(135deg,#050510 0%,#0d0d1a 100%)', backBorderColor:'#00ff88', backPattern:'grid', backPatternColor:'rgba(0,255,136,0.09)', customBackImage:null,
+    themeDarkest:'#020208', themeDark:'#050510', themeFelt:'#0d0d1a', themeMid:'#1a1a2e', themeAccent:'#00ff88', themeAccentBright:'#66ffaa' },
+  { id:'royal', name:'Royal Purple', faceBackground:'#faf5ff', faceRedColor:'#880088', faceBlackColor:'#4a0080', faceBorderColor:'#ce93d8', fontFamily:"'Palatino Linotype', Palatino, 'Book Antiqua', serif", backGradient:'linear-gradient(135deg,#4a148c 0%,#6a1b9a 50%,#38006b 100%)', backBorderColor:'#ce93d8', backPattern:'diamonds', backPatternColor:'rgba(220,170,255,0.14)', customBackImage:null,
+    themeDarkest:'#150030', themeDark:'#2a0050', themeFelt:'#38006b', themeMid:'#6a1b9a', themeAccent:'#ce93d8', themeAccentBright:'#e1bee7' },
+  { id:'minimal', name:'Minimal', faceBackground:'#ffffff', faceRedColor:'#d32f2f', faceBlackColor:'#212121', faceBorderColor:'#bdbdbd', fontFamily:'Arial, Helvetica, sans-serif', backGradient:'linear-gradient(135deg,#e0e0e0 0%,#bdbdbd 100%)', backBorderColor:'#9e9e9e', backPattern:'none', backPatternColor:'transparent', customBackImage:null,
+    themeDarkest:'#0a0a0a', themeDark:'#1a1a1a', themeFelt:'#2e2e2e', themeMid:'#424242', themeAccent:'#9e9e9e', themeAccentBright:'#e0e0e0' },
+  { id:'retro', name:'Retro', faceBackground:'#f5e6cc', faceRedColor:'#8b1a1a', faceBlackColor:'#2c1810', faceBorderColor:'#a0785a', fontFamily:"'Times New Roman', Times, serif", backGradient:'linear-gradient(135deg,#6b4226 0%,#8b5e3c 50%,#5c3317 100%)', backBorderColor:'#d2a679', backPattern:'crosshatch', backPatternColor:'rgba(255,220,170,0.12)', customBackImage:null,
+    themeDarkest:'#120900', themeDark:'#2c1a0a', themeFelt:'#4a2f18', themeMid:'#6b4226', themeAccent:'#d2a679', themeAccentBright:'#f5d5a8' },
+  { id:'cyberpunk', name:'Cyberpunk', faceBackground:'#0a0a1a', faceRedColor:'#ff2d78', faceBlackColor:'#00e5ff', faceBorderColor:'#ff2d78', fontFamily:"'Courier New', monospace", backGradient:'linear-gradient(135deg,#0a0a1a 0%,#1a0a2e 100%)', backBorderColor:'#ff2d78', backPattern:'grid', backPatternColor:'rgba(255,45,120,0.09)', customBackImage:null,
+    themeDarkest:'#030308', themeDark:'#0a0a1a', themeFelt:'#12041e', themeMid:'#1a0a2e', themeAccent:'#ff2d78', themeAccentBright:'#ff6ea8' },
+  { id:'rose', name:'Rose', faceBackground:'#fff0f5', faceRedColor:'#c2185b', faceBlackColor:'#880e4f', faceBorderColor:'#f48fb1', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#c2185b 0%,#e91e8c 50%,#880e4f 100%)', backBorderColor:'#f48fb1', backPattern:'dots', backPatternColor:'rgba(255,180,210,0.18)', customBackImage:null,
+    themeDarkest:'#1a0010', themeDark:'#3a0025', themeFelt:'#5e0040', themeMid:'#880e4f', themeAccent:'#f48fb1', themeAccentBright:'#fce4ec' },
+  { id:'arctic', name:'Arctic', faceBackground:'#f0f8ff', faceRedColor:'#1565c0', faceBlackColor:'#0d47a1', faceBorderColor:'#90caf9', fontFamily:"'Trebuchet MS', sans-serif", backGradient:'linear-gradient(135deg,#90caf9 0%,#bbdefb 50%,#42a5f5 100%)', backBorderColor:'#42a5f5', backPattern:'dots', backPatternColor:'rgba(100,180,255,0.2)', customBackImage:null,
+    themeDarkest:'#061224', themeDark:'#0d2a5a', themeFelt:'#1a3a7a', themeMid:'#1565c0', themeAccent:'#90caf9', themeAccentBright:'#bbdefb' },
+  { id:'obsidian', name:'Obsidian', faceBackground:'#1a1a1a', faceRedColor:'#ff4444', faceBlackColor:'#d4af37', faceBorderColor:'#333333', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#000000 0%,#1a1a1a 100%)', backBorderColor:'#d4af37', backPattern:'diamonds', backPatternColor:'rgba(212,175,55,0.13)', customBackImage:null,
+    themeDarkest:'#000000', themeDark:'#0d0d0d', themeFelt:'#1a1a1a', themeMid:'#2a2a2a', themeAccent:'#d4af37', themeAccentBright:'#f0d060' },
+  { id:'sakura', name:'Sakura', faceBackground:'#fff5f9', faceRedColor:'#d63384', faceBlackColor:'#6f42c1', faceBorderColor:'#ffb3d1', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#f8a5c2 0%,#f368a9 50%,#f8a5c2 100%)', backBorderColor:'#f368a9', backPattern:'dots', backPatternColor:'rgba(255,255,255,0.3)', customBackImage:null,
+    themeDarkest:'#200015', themeDark:'#3d0028', themeFelt:'#6b0048', themeMid:'#9b1468', themeAccent:'#f48fb1', themeAccentBright:'#fce4ec' },
+  { id:'slate', name:'Slate', faceBackground:'#f8f9fa', faceRedColor:'#dc3545', faceBlackColor:'#343a40', faceBorderColor:'#adb5bd', fontFamily:"'Trebuchet MS', sans-serif", backGradient:'linear-gradient(135deg,#495057 0%,#343a40 100%)', backBorderColor:'#6c757d', backPattern:'stripes', backPatternColor:'rgba(255,255,255,0.07)', customBackImage:null,
+    themeDarkest:'#0d0f10', themeDark:'#1c1e20', themeFelt:'#2c2f33', themeMid:'#495057', themeAccent:'#6c757d', themeAccentBright:'#adb5bd' },
+  { id:'halloween', name:'Halloween', faceBackground:'#1a0a00', faceRedColor:'#ff6600', faceBlackColor:'#cc33ff', faceBorderColor:'#ff6600', fontFamily:'Georgia, serif', backGradient:'linear-gradient(135deg,#1a0a00 0%,#3d1a00 50%,#0d0020 100%)', backBorderColor:'#ff6600', backPattern:'stars', backPatternColor:'rgba(255,102,0,0.18)', customBackImage:null,
+    themeDarkest:'#050000', themeDark:'#1a0500', themeFelt:'#2e0d00', themeMid:'#4a1a00', themeAccent:'#ff6600', themeAccentBright:'#ff9933' },
 ];
 
 function generatePatternURL(type, color) {
@@ -4349,7 +4371,22 @@ function applyDeckTheme(theme) {
     ? `url(${theme.customBackImage}) center/cover no-repeat`
     : theme.backGradient;
   const pat = generatePatternURL(theme.backPattern, theme.backPatternColor);
+  // UI theme colors — fall back to classic green if not set
+  const darkest  = theme.themeDarkest      || '#0d1f0d';
+  const dark     = theme.themeDark         || '#1a3a1a';
+  const felt     = theme.themeFelt         || '#2d5a27';
+  const mid      = theme.themeMid          || '#3a7a32';
+  const accent   = theme.themeAccent       || '#d4a017';
+  const accentBr = theme.themeAccentBright || '#f0c040';
   el.textContent = `:root {
+    /* UI theme */
+    --green-darkest:    ${darkest};
+    --green-dark:       ${dark};
+    --green-felt:       ${felt};
+    --green-mid:        ${mid};
+    --gold:             ${accent};
+    --gold-bright:      ${accentBr};
+    /* Card theme */
     --card-face-bg:     ${theme.faceBackground};
     --card-red:         ${theme.faceRedColor};
     --card-black:       ${theme.faceBlackColor};
@@ -4450,21 +4487,36 @@ function syncCustomInputsToTheme(theme) {
   const thumb = document.getElementById('cust-back-thumb');
   if (theme.customBackImage) { thumb.src = theme.customBackImage; thumb.style.display = 'block'; }
   else { thumb.style.display = 'none'; }
+  // UI theme pickers
+  document.getElementById('cust-theme-dark').value      = theme.themeDark      || '#1a3a1a';
+  document.getElementById('cust-theme-felt').value      = theme.themeFelt      || '#2d5a27';
+  document.getElementById('cust-theme-accent').value    = theme.themeAccent    || '#d4a017';
+  document.getElementById('cust-theme-accent-br').value = theme.themeAccentBright || '#f0c040';
 }
 function updateCustomTheme() {
   const c1 = document.getElementById('cust-back-c1').value;
   const c2 = document.getElementById('cust-back-c2').value;
   const pHex = document.getElementById('cust-pattern-color').value;
+  const themeDark   = document.getElementById('cust-theme-dark').value;
+  const themeFelt   = document.getElementById('cust-theme-felt').value;
+  const themeAcc    = document.getElementById('cust-theme-accent').value;
+  const themeAccBr  = document.getElementById('cust-theme-accent-br').value;
   _pendingTheme = { ..._pendingTheme, id:'custom', name:'Custom',
-    faceBackground:   document.getElementById('cust-face-bg').value,
-    faceRedColor:     document.getElementById('cust-face-red').value,
-    faceBlackColor:   document.getElementById('cust-face-black').value,
-    faceBorderColor:  document.getElementById('cust-face-border').value,
-    fontFamily:       document.getElementById('cust-font').value,
-    backGradient:     `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`,
-    backBorderColor:  document.getElementById('cust-back-border').value,
-    backPattern:      document.getElementById('cust-back-pattern').value,
-    backPatternColor: pHex + '33',
+    faceBackground:      document.getElementById('cust-face-bg').value,
+    faceRedColor:        document.getElementById('cust-face-red').value,
+    faceBlackColor:      document.getElementById('cust-face-black').value,
+    faceBorderColor:     document.getElementById('cust-face-border').value,
+    fontFamily:          document.getElementById('cust-font').value,
+    backGradient:        `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`,
+    backBorderColor:     document.getElementById('cust-back-border').value,
+    backPattern:         document.getElementById('cust-back-pattern').value,
+    backPatternColor:    pHex + '33',
+    themeDarkest:        themeDark,
+    themeDark:           themeDark,
+    themeFelt:           themeFelt,
+    themeMid:            themeFelt,
+    themeAccent:         themeAcc,
+    themeAccentBright:   themeAccBr,
   };
   applyDeckTheme(_pendingTheme);
   document.querySelectorAll('.deck-preset-item').forEach(el => el.classList.remove('selected'));
