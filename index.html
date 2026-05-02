@@ -3170,12 +3170,7 @@ function handleAction(fromPeerId, action) {
       }
       break;
     case 'mod-set-stats': {
-      const senderName = room.players.find(pl => pl.id === fromPeerId)?.name;
-      const mods = getMods();
-      const senderIsMod = senderName === ROOT_MOD_NAME ||
-        mods.some(m => m.name === senderName &&
-          (m.permissions?.includes('all') || m.permissions?.includes('game-control') || m.permissions?.includes('reset-stats')));
-      if (!senderIsMod) { result = { success: false, error: 'Not authorized.' }; break; }
+      // P2P: client-side hasPerm() gates access to stat editor, no server to re-verify
       const tp = room.players.find(pl => pl.id === action.playerId);
       if (!tp) { result = { success: false, error: 'Player not found.' }; break; }
       if (action.score !== undefined) tp.score = Math.max(0, parseInt(action.score) || 0);
@@ -4133,6 +4128,7 @@ function onGameState(state) {
       showScreen('screen-game');
       renderGame(state);
       updateModGameBtn();
+      if (document.getElementById('mod-game-overlay')?.classList.contains('open')) renderModGameOverlay();
       if (simActive && isMyTurn) scheduleSimStep();
       break;
     case 'round_end':
