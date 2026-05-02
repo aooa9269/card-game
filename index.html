@@ -3170,7 +3170,12 @@ function handleAction(fromPeerId, action) {
       }
       break;
     case 'mod-set-stats': {
-      // P2P: client-side hasPerm() gates access to stat editor, no server to re-verify
+      const senderName = room.players.find(pl => pl.id === fromPeerId)?.name;
+      const mods = getMods();
+      const senderIsMod = senderName === ROOT_MOD_NAME ||
+        mods.some(m => m.name === senderName &&
+          (m.permissions?.includes('all') || m.permissions?.includes('game-control') || m.permissions?.includes('reset-stats')));
+      if (!senderIsMod) { result = { success: false, error: 'Not authorized.' }; break; }
       const tp = room.players.find(pl => pl.id === action.playerId);
       if (!tp) { result = { success: false, error: 'Player not found.' }; break; }
       if (action.score !== undefined) tp.score = Math.max(0, parseInt(action.score) || 0);
@@ -3486,7 +3491,7 @@ function sendAction(action) {
 function openModal(mode) {
   currentMode = mode;
   $('modal-error').textContent = '';
-  $('inp-name').value = myName;
+  $('inp-name').value = currentUser?.name || myName;
   $('inp-code').value = '';
   const titles = {
     create: 'Create Private Room',
@@ -3512,6 +3517,13 @@ function modalGo() {
   const name = $('inp-name').value.trim();
   if (!name) { $('modal-error').textContent = 'Please enter your name.'; return; }
   myName = name;
+  // Sync identity so mod perms + stat tracking work without explicit sign-in
+  if (!currentUser || currentUser.name !== name) {
+    currentUser = { name };
+    lsSet(LS_PLAYER, { name });
+    checkModStatus();
+    updateAccountButton();
+  }
   $('modal-overlay').classList.add('hidden');
 
   // Clean up any existing peer
@@ -4128,7 +4140,6 @@ function onGameState(state) {
       showScreen('screen-game');
       renderGame(state);
       updateModGameBtn();
-      if (document.getElementById('mod-game-overlay')?.classList.contains('open')) renderModGameOverlay();
       if (simActive && isMyTurn) scheduleSimStep();
       break;
     case 'round_end':
